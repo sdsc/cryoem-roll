@@ -1,0 +1,10 @@
+#%Module1.0
+module-whatis "relion"
+module-whatis "Version: VERSION"
+module-whatis "Description: relion"
+module-whatis "Compiler: ROLLCOMPILER"
+module-whatis "mpi: ROLLMPI"
+setenv RELIONHOME /opt/relion
+prepend-path PATH /opt/relion/bin
+prepend-path LD_LIBRARY_PATH /opt/relion/lib
+module load ROLLCOMPILER ROLLMPI

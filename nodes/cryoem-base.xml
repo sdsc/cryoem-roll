@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+
+<kickstart>
+
+
+	<description>
+        relion http://www2.mrc-lmb.cam.ac.uk/relion/index.php/Main_Page
+        frealign http://grigoriefflab.janelia.org/frealign
+        eman http://ncmi.bcm.tmc.edu/ncmi/software/software_details?selected_software=counter_222
+	</description>
+
+	<copyright>
+	Copyright (c) 2000 - 2014 The Regents of the University of California.
+	All rights reserved. Rocks(r) v6.1.1 www.rocksclusters.org
+	</copyright>
+
+        <package>sdsc-relion</package>
+        <package>sdsc-frealign</package>
+        <package>sdsc-eman</package>
+        <package>sdsc-relion-modules</package>
+        <package>sdsc-frealign-modules</package>
+        <package>sdsc-eman-modules</package>
+	<package>sdsc-cryoem-roll-test</package>
+</kickstart>
