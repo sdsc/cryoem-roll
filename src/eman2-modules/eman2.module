@@ -1,0 +1,12 @@
+#%Module1.0
+module-whatis "eman2"
+module-whatis "Version: VERSION"
+module-whatis "Description: frealign"
+module-whatis "Compiler: ROLLCOMPILER"
+module-whatis "mpi: ROLLMPI"
+setenv EMAN2HOME /opt/eman2
+prepend-path PATH /opt/eman2/bin
+prepend-path PYTHONPATH /opt/eman2/bin:/opt/eman2/lib
+prepend-path LD_LIBRARY_PATH /opt/eman2/lib
+module load python scipy ROLLCOMPILER ROLLMPI gsl hdf5 boost
+setenv LD_PRELOAD /opt/python/lib/libpython2.7.so:/opt/boost/COMPILERNAME/MPINAME/lib/libboost_python.so

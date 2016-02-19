@@ -1,0 +1,8 @@
+#%Module1.0
+module-whatis "frealign"
+module-whatis "Version: VERSION"
+module-whatis "Description: frealign"
+module-whatis "Compiler: ROLLCOMPILER"
+setenv FREALIGNHOME /opt/frealign
+prepend-path PATH /opt/frealign/bin
+module load ROLLCOMPILER mkl
