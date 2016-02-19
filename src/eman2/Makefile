@@ -88,7 +88,7 @@ DESCRIPTION:
           $(DESCRIBE_HDF5); \
 	  if test "$(CUDABUILD)" = "yes"; then \
 	    $(DESCRIBE_CUDA) >> $@; \
-	  fi
+	  fi \
 	) > $@
 
 LICENSE: $(SRC_DIRS)
