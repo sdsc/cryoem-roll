@@ -93,7 +93,7 @@ build: $(SRC_DIRS)
           cd ../..; \
           export CPPFLAGS="-I$${FFTWHOME}/include `bin/fltk-config --cxxflags`"; \
           export LDFLAGS="-L$${FFTWHOME}/lib `bin/fltk-config --ldflags`"; \
-         ./configure --enable-mpi prefix=$(ROOT)/$(PKGROOT); \
+         ./configure --enable-mpi prefix=$(PKGROOT); \
           $(MAKE) -j 8; \
 	)
 	@echo "::: Package $(NAME) build complete :::"
@@ -104,11 +104,11 @@ install::
 	( \
 	  cd $(SOURCE_DIR); \
 	  $(MAKE) install; \
-          cp -r bin/*  $(ROOT)/$(PKGROOT)/bin; \
-          cp -r include/*  $(ROOT)/$(PKGROOT)/include; \
-          cp -r lib/*  $(ROOT)/$(PKGROOT)/lib; \
-          cp -r share/*  $(ROOT)/$(PKGROOT)/share; \
-          cp maingui $(ROOT)/$(PKGROOT)/bin/relion \
+          cp -r bin/*  $(PKGROOT)/bin; \
+          cp -r include/*  $(PKGROOT)/include; \
+          cp -r lib/*  $(PKGROOT)/lib; \
+          cp -r share/*  $(PKGROOT)/share; \
+          cp maingui $(PKGROOT)/bin/relion \
 	)
 	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)
