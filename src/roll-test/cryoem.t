@@ -24,7 +24,6 @@ my @eman2_packages = (
 );
 
 if($appliance =~ /$installedOnAppliancesPattern/) {
-  ok($isInstalled, 'cryoem installed');
   foreach my $package(@packages) {
     ok(-d "/opt/$package", "$package installed");
   }
