@@ -100,6 +100,7 @@ build: $(SRC_DIRS)
 	
 install::
 	mkdir -p $(ROOT)/$(PKGROOT)
+	$(PKGROOT_BIND_MOUNT)
 	( \
 	  cd $(SOURCE_DIR); \
 	  $(MAKE) install; \
@@ -109,6 +110,7 @@ install::
           cp -r share/*  $(ROOT)/$(PKGROOT)/share; \
           cp maingui $(ROOT)/$(PKGROOT)/bin/relion \
 	)
+	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)
 	@echo "::: Package $(NAME) install complete :::"
 
