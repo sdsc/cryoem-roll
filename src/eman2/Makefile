@@ -77,18 +77,17 @@ endif
 DESCRIPTION:
 	$(MODULE_LOAD_CC); \
 	( \
-	  $(DESCRIBE_PKG); \
-	  $(DESCRIBE_CC); \
-	  $(DESCRIBE_MPI); \
-	  $(DESCRIBE_CMAKE); \
-	  $(DESCRIBE_PYTHON); \
-	  $(DESCRIBE_BOOST); \
-	  $(DESCRIBE_MKL); \
+          $(DESCRIBE_PKG); \
+          $(DESCRIBE_CC); \
+          $(DESCRIBE_MPI); \
+          $(DESCRIBE_PYTHON); \
+          $(DESCRIBE_BOOST); \
+          $(DESCRIBE_MKL); \
           $(DESCRIBE_FFTW); \
           $(DESCRIBE_HDF5); \
-	  if test "$(CUDABUILD)" = "yes"; then \
-	    $(DESCRIBE_CUDA) >> $@; \
-	  fi \
+          if test "$(CUDABUILD)" = "yes"; then \
+             $(DESCRIBE_CUDA) >> $@; \
+           fi \
 	) > $@
 
 LICENSE: $(SRC_DIRS)
