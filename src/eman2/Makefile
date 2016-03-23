@@ -129,6 +129,7 @@ build: $(SRC_DIRS)
            -DBOOST_INCLUDE_PATH=$${BOOSTHOME}/include \
            -DFREETYPE_INCLUDE_PATH=/usr/include/freetype2 \
            -DBOOST_LIBRARY=$${BOOST_HOME}/lib $(CUDAOPTS) \
+           -DNUMPY_INCLUDE_PATH=/opt/python/lib/python2.7/site-packages/numpy/core/include \
            -DPYTHON_LIBRARY=$${PYTHONROOT}/lib  .. \
 	)
 	@echo "::: Package $(NAME) build complete :::"
