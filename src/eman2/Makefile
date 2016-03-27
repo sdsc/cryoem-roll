@@ -104,6 +104,7 @@ build: $(SRC_DIRS)
 	  $(MODULE_LOAD_CC); \
           $(MODULE_LOAD_MPI); \
           $(MODULE_LOAD_CMAKE); \
+          $(MODULE_LOAD_PYTHON); \
           $(MODULE_LOAD_BOOST); \
           $(MODULE_LOAD_MKL); \
           $(MODULE_LOAD_HDF5); \
