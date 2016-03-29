@@ -14,6 +14,8 @@ $(VERSION_INC): $(VERSION_SRC)
 build:
 
 install:: typical-modulefile-install
+	module load $(ROLLCOMPILER) $(ROLLMPI) boost; \
+	perl -pi -e "s#BOOSTHOME#$${BOOSTHOME}#" $(ROOT)/$(PKGROOT)/$(VERSION)
 
 clean::
 	rm -f $(VERSION_INC)
