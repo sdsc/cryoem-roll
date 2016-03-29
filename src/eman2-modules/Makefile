@@ -14,8 +14,10 @@ $(VERSION_INC): $(VERSION_SRC)
 build:
 
 install:: typical-modulefile-install
-	module load $(ROLLCOMPILER) $(ROLLMPI) boost; \
-	perl -pi -e "s#BOOSTHOME#$${BOOSTHOME}#" $(ROOT)/$(PKGROOT)/$(VERSION)
+	module load $(ROLLCOMPILER) $(ROLLMPI) python boost; \
+	perl -pi -e "s#BOOSTHOME#$${BOOSTHOME}#;" \
+	         -e "s#PYVERS#$(PYVERSION)#;" \
+	         -e "s#PYTHONROOT#$${PYTHONROOT}#" $(ROOT)/$(PKGROOT)/$(VERSION)
 
 clean::
 	rm -f $(VERSION_INC)

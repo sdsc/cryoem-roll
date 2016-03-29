@@ -9,4 +9,4 @@ prepend-path PATH /opt/eman2/bin
 prepend-path PYTHONPATH /opt/eman2/bin:/opt/eman2/lib
 prepend-path LD_LIBRARY_PATH /opt/eman2/lib
 module load python scipy ROLLCOMPILER ROLLMPI gsl hdf5 boost fftw
-setenv LD_PRELOAD BOOSTHOME/lib/libboost_python.so
+setenv LD_PRELOAD PYTHONROOT/lib/libpythonPYVERS.so:BOOSTHOME/lib/libboost_python.so
