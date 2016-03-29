@@ -107,6 +107,7 @@ build: $(SRC_DIRS)
           $(MODULE_LOAD_PYTHON); \
           $(MODULE_LOAD_BOOST); \
           $(MODULE_LOAD_MKL); \
+          $(MODULE_LOAD_FFTW); \
           $(MODULE_LOAD_HDF5); \
           if test "$(CUDABUILD)" = "yes"; then \
              $(MODULE_LOAD_CUDA); \
