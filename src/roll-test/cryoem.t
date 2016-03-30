@@ -27,8 +27,6 @@ if($appliance =~ /$installedOnAppliancesPattern/) {
   foreach my $package(@packages) {
     ok(-d "/opt/$package", "$package installed");
   }
-} else {
-  ok(! $isInstalled, 'eman2 not installed');
 }
 
 $packageHome = '/opt/relion';

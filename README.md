@@ -2,13 +2,13 @@
 
 ## Overview
 
-This roll bundles... relion, eman2,frealign
+This roll bundles relion, eman2 and frealign
 
 For more information about the various packages included in the cryoem roll please visit their official web pages:
 
 - <a href="http://www2.mrc-lmb.cam.ac.uk/relion/index.php/Main_Page" target="_blank">relion</a> is  is a stand-alone computer program that employs an empirical Bayesian approach to refinement of (multiple) 3D reconstructions or 2D class averages in electron cryo-microscopy (cryo-EM)
-- <a href="http://grigoriefflab.janelia.org/frealign" target="_blank>frealign<\a> is a program for high-resolution refinement of 3D reconstructions from cryo-EM images of single particles
-- <a href="http://ncmi.bcm.tmc.edu/ncmi/software/software_details?selected_software=counter_222" target="_blank>eman2<\a> EMAN is a broadly based greyscale scientific image processing suite with a primary focus on processing data from transmission electron microscopes
+- <a href="http://grigoriefflab.janelia.org/frealign" target="_blank">frealign</a> is a program for high-resolution refinement of 3D reconstructions from cryo-EM images of single particles
+- <a href="http://ncmi.bcm.tmc.edu/ncmi/software/software_details?selected_software=counter_222" target="_blank">eman2</a>  is a broadly based greyscale scientific image processing suite with a primary focus on processing data from transmission electron microscopes
 
 
 ## Requirements
@@ -59,6 +59,8 @@ make ROLLCOMPILER=intel ROLLMPI=mvapich2_ib 2>&1 | tee build.log
 The build process recognizes "gnu", "intel" or "pgi" as the value for the
 `ROLLCOMPILER` variable; any MPI modulefile name may be used as the value of
 the `ROLLMPI` variable.  The default values are "gnu" and "rocks-openmpi".
+
+Note that eman2 is always built with the gnu compiler.
 <ENDIF>
 
 ## Installation
@@ -90,4 +92,5 @@ run the test scripts execute the following command(s):
 ```shell
 % /root/rolltests/cryoem.t 
 ```
+
 

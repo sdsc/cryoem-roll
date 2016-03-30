@@ -61,11 +61,19 @@ ifndef ROLLCOMPILER
   ROLLCOMPILER = gnu
 endif
 
+ifndef ROLLMPI
+  ROLLMPI = rocks-openmpi
+endif
+
+ifndef ROLLPY
+  ROLLPY = python
+endif
+
 -include $(ROLLSROOT)/etc/Rolls.mk
 include Rolls.mk
 
 default:
-	$(MAKE) ROLLCOMPILER="$(ROLLCOMPILER)" roll
+	$(MAKE) ROLLCOMPILER="$(ROLLCOMPILER)" ROLLMPI="$(ROLLMPI)" ROLLPY="$(ROLLPY)" roll
 
 distclean:: clean
 	-rm -f _arch build.log

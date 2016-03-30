@@ -67,6 +67,10 @@ CACHE_DIR=$(REDHAT.ROOT)/cache
 
 ROLLPY=python
 
+ifndef PYVERSION
+  PYVERSION = 2.6
+endif
+
 CUDABUILD = no
 CUDAOPTS=
 ifneq ("$(ROLLOPTS)", "$(subst cuda,,$(ROLLOPTS))")
@@ -100,8 +104,10 @@ build: $(SRC_DIRS)
 	  $(MODULE_LOAD_CC); \
           $(MODULE_LOAD_MPI); \
           $(MODULE_LOAD_CMAKE); \
+          $(MODULE_LOAD_PYTHON); \
           $(MODULE_LOAD_BOOST); \
           $(MODULE_LOAD_MKL); \
+          $(MODULE_LOAD_FFTW); \
           $(MODULE_LOAD_HDF5); \
           if test "$(CUDABUILD)" = "yes"; then \
              $(MODULE_LOAD_CUDA); \
@@ -129,6 +135,7 @@ build: $(SRC_DIRS)
            -DBOOST_INCLUDE_PATH=$${BOOSTHOME}/include \
            -DFREETYPE_INCLUDE_PATH=/usr/include/freetype2 \
            -DBOOST_LIBRARY=$${BOOST_HOME}/lib $(CUDAOPTS) \
+           -DNUMPY_INCLUDE_PATH=$${PYTHONROOT}/lib/python$(PYVERSION)/site-packages/numpy/core/include \
            -DPYTHON_LIBRARY=$${PYTHONROOT}/lib  .. \
 	)
 	@echo "::: Package $(NAME) build complete :::"

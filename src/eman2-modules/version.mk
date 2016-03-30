@@ -1,11 +1,15 @@
 override ROLLCOMPILER = gnu
 COMPILERNAME := $(firstword $(subst /, ,$(ROLLCOMPILER)))
+
+ifndef ROLLMPI
+  ROLLMPI = rocks-openmpi
+endif
 MPINAME := $(firstword $(subst /, ,$(ROLLMPI)))
+
 PACKAGE     = eman2
 CATEGORY    = applications
-
 NAME        = sdsc-$(PACKAGE)-modules
-RELEASE     = 1
+RELEASE     = 5
 PKGROOT     = /opt/modulefiles/$(CATEGORY)/$(PACKAGE)
 
 VERSION_SRC = $(REDHAT.ROOT)/src/$(PACKAGE)/version.mk
