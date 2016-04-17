@@ -112,7 +112,9 @@ install::
           cp -r lib/*  $(PKGROOT)/lib; \
           cp -r share/*  $(PKGROOT)/share; \
           cp maingui $(PKGROOT)/bin/relion; \
-          $(PKGROOT)/bin/relion \
+          mpic++ -O2 -o .libs/lt-maingui src/apps/maingui.o  -L$${FFTWHOME}/lib -Lexternal/fltk-1.3.0/../../lib -L/usr/lib64 ./.libs/librelion-1.4.so -lfltk -lXext -lXft -lfontconfig -lXinerama -lpthread -ldl -lX11 -lstdc++ $${FFTWHOME}/lib/libfftw3_threads.so $${FFTWHOME}/lib/libfftw3.so -lm -pthread; \
+          mkdir -p  $(PKGROOT)/bin/.libs; \
+          cp .libs/lt-maingui $(PKGROOT)/bin/.libs \
 	)
 	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)
