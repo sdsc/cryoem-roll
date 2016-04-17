@@ -99,16 +99,20 @@ build: $(SRC_DIRS)
 	@echo "::: Package $(NAME) build complete :::"
 	
 install::
-	mkdir -p $(ROOT)/$(PKGROOT)
+	mkdir -p $(ROOT)/$(PKGROOT)/share
 	$(PKGROOT_BIND_MOUNT)
 	( \
+	  $(MODULE_LOAD_CC); \
+	  $(MODULE_LOAD_MPI); \
+	  $(MODULE_LOAD_FFTW); \
 	  cd $(SOURCE_DIR); \
 	  $(MAKE) install; \
           cp -r bin/*  $(PKGROOT)/bin; \
           cp -r include/*  $(PKGROOT)/include; \
           cp -r lib/*  $(PKGROOT)/lib; \
           cp -r share/*  $(PKGROOT)/share; \
-          cp maingui $(PKGROOT)/bin/relion \
+          cp maingui $(PKGROOT)/bin/relion; \
+          $(PKGROOT)/bin/relion \
 	)
 	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)
