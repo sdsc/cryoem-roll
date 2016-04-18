@@ -31,6 +31,8 @@ The roll sources assume that modulefiles provided by SDSC compiler and mpi
 rolls are available, but it will build without them as long as the environment
 variables they provide are otherwise defined.
 
+The eman2 package depends on the boost and hdf rolls.
+The relion package depends on the fftw roll.
 
 
 ## Building
