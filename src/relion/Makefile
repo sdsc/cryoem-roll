@@ -99,16 +99,22 @@ build: $(SRC_DIRS)
 	@echo "::: Package $(NAME) build complete :::"
 	
 install::
-	mkdir -p $(ROOT)/$(PKGROOT)
+	mkdir -p $(ROOT)/$(PKGROOT)/share
 	$(PKGROOT_BIND_MOUNT)
 	( \
+	  $(MODULE_LOAD_CC); \
+	  $(MODULE_LOAD_MPI); \
+	  $(MODULE_LOAD_FFTW); \
 	  cd $(SOURCE_DIR); \
 	  $(MAKE) install; \
           cp -r bin/*  $(PKGROOT)/bin; \
           cp -r include/*  $(PKGROOT)/include; \
           cp -r lib/*  $(PKGROOT)/lib; \
           cp -r share/*  $(PKGROOT)/share; \
-          cp maingui $(PKGROOT)/bin/relion \
+          cp maingui $(PKGROOT)/bin/relion; \
+          mpic++ -O2 -o .libs/lt-maingui src/apps/maingui.o  -L$${FFTWHOME}/lib -Lexternal/fltk-1.3.0/../../lib -L/usr/lib64 ./.libs/librelion-1.4.so -lfltk -lXext -lXft -lfontconfig -lXinerama -lpthread -ldl -lX11 -lstdc++ $${FFTWHOME}/lib/libfftw3_threads.so $${FFTWHOME}/lib/libfftw3.so -lm -pthread; \
+          mkdir -p  $(PKGROOT)/bin/.libs; \
+          cp .libs/lt-maingui $(PKGROOT)/bin/.libs \
 	)
 	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)

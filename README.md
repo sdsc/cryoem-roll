@@ -31,7 +31,9 @@ The roll sources assume that modulefiles provided by SDSC compiler and mpi
 rolls are available, but it will build without them as long as the environment
 variables they provide are otherwise defined.
 
+The build process requires the BOOST, HDF5 and FFTW libraries and assumes that the modulefiles provided by the SDSC boost-roll, hdf-roll and fftw-roll are available.
 
+It will build without the modulefiles as long as the environment variables they provided are set.
 
 ## Building
 
