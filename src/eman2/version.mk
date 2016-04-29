@@ -8,7 +8,7 @@ MPINAME := $(firstword $(subst /, ,$(ROLLMPI)))
 
 NAME           = sdsc-eman2
 VERSION        = 2.1
-RELEASE        = 2
+RELEASE        = 3
 PKGROOT        = /opt/eman2
 
 SRC_SUBDIR     = eman2

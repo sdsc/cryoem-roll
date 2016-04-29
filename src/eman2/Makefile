@@ -80,6 +80,7 @@ endif
 
 DESCRIPTION:
 	$(MODULE_LOAD_CC); \
+	$(MODULE_LOAD_PYTHON); \
 	( \
           $(DESCRIBE_PKG); \
           $(DESCRIBE_CC); \
