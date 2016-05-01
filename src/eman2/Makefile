@@ -61,7 +61,10 @@ include Rules.mk
 include $(SDSCDEVEL)/Pull.mk
 include $(SDSCDEVEL)/Rules.mk
 
-$(NAME).spec: DESCRIPTION LICENSE
+DESCRIBE_GSL = echo built with gsl $(call GET_MODULE_VERSION, gsl)
+MODULE_LOAD_GSL = $(call MODULE_LOAD_PACKAGE, gsl, GSLHOME)
+DESCRIBE_SCIPY = echo built with scipy $(call GET_MODULE_VERSION, scipy)
+MODULE_LOAD_SCIPY = $(call MODULE_LOAD_PACKAGE, scipy, SCIPYHOME)
 
 CACHE_DIR=$(REDHAT.ROOT)/cache
 
@@ -78,6 +81,8 @@ ifneq ("$(ROLLOPTS)", "$(subst cuda,,$(ROLLOPTS))")
   CUDAOPTS=-DENABLE_SPARX_CUDA=yes -DENABLE_EMAN_CUDA=yes
 endif
 
+$(NAME).spec: DESCRIPTION LICENSE
+
 DESCRIPTION:
 	$(MODULE_LOAD_CC); \
 	$(MODULE_LOAD_PYTHON); \
@@ -90,6 +95,8 @@ DESCRIPTION:
           $(DESCRIBE_MKL); \
           $(DESCRIBE_FFTW); \
           $(DESCRIBE_HDF5); \
+          $(DESCRIBE_SCIPY); \
+          $(DESCRIBE_GSL); \
           if test "$(CUDABUILD)" = "yes"; then \
              $(DESCRIBE_CUDA) >> $@; \
            fi \
@@ -113,8 +120,8 @@ build: $(SRC_DIRS)
           if test "$(CUDABUILD)" = "yes"; then \
              $(MODULE_LOAD_CUDA); \
           fi; \
-          module load scipy; \
-          module load gsl; \
+	  $(MODULE_LOAD_SCIPY); \
+	  $(MODULE_LOAD_GSL); \
           export LDFLAGS="-lGL -lGLU"; \
           cd $(FTGL_DIR); \
           ./configure CC=$(CC) CXX=$(CXX) --prefix=$(CACHE_DIR)/ftgl; \
@@ -154,8 +161,8 @@ install::
           if test "$(CUDABUILD)" = "yes"; then \
              $(MODULE_LOAD_CUDA); \
           fi; \
-          module load scipy; \
-          module load gsl; \
+	  $(MODULE_LOAD_SCIPY); \
+	  $(MODULE_LOAD_GSL); \
           make install \
 	)
 	$(INSTALL_LICENSE_FILES)
