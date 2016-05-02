@@ -68,12 +68,6 @@ MODULE_LOAD_SCIPY = $(call MODULE_LOAD_PACKAGE, scipy, SCIPYHOME)
 
 CACHE_DIR=$(REDHAT.ROOT)/cache
 
-ROLLPY=python
-
-ifndef PYVERSION
-  PYVERSION = 2.6
-endif
-
 CUDABUILD = no
 CUDAOPTS=
 ifneq ("$(ROLLOPTS)", "$(subst cuda,,$(ROLLOPTS))")
