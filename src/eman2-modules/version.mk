@@ -6,6 +6,10 @@ ifndef ROLLMPI
 endif
 MPINAME := $(firstword $(subst /, ,$(ROLLMPI)))
 
+ifndef ROLLPY
+  ROLLPY = python
+endif
+
 PACKAGE     = eman2
 CATEGORY    = applications
 NAME        = sdsc-$(PACKAGE)-modules

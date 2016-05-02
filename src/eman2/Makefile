@@ -116,6 +116,7 @@ build: $(SRC_DIRS)
           fi; \
 	  $(MODULE_LOAD_SCIPY); \
 	  $(MODULE_LOAD_GSL); \
+	  pyvers=`python --version 2>&1 | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`; \
           export LDFLAGS="-lGL -lGLU"; \
           cd $(FTGL_DIR); \
           ./configure CC=$(CC) CXX=$(CXX) --prefix=$(CACHE_DIR)/ftgl; \
@@ -137,7 +138,7 @@ build: $(SRC_DIRS)
            -DBOOST_INCLUDE_PATH=$${BOOSTHOME}/include \
            -DFREETYPE_INCLUDE_PATH=/usr/include/freetype2 \
            -DBOOST_LIBRARY=$${BOOST_HOME}/lib $(CUDAOPTS) \
-           -DNUMPY_INCLUDE_PATH=$${PYTHONROOT}/lib/python$(PYVERSION)/site-packages/numpy/core/include \
+           -DNUMPY_INCLUDE_PATH=$${PYTHONROOT}/lib/python$${pyvers}/site-packages/numpy/core/include \
            -DPYTHON_LIBRARY=$${PYTHONROOT}/lib  .. \
 	)
 	@echo "::: Package $(NAME) build complete :::"
