@@ -63,7 +63,15 @@ The build process recognizes "gnu", "intel" or "pgi" as the value for the
 the `ROLLMPI` variable.  The default values are "gnu" and "rocks-openmpi".
 
 Note that eman2 is always built with the gnu compiler.
-<ENDIF>
+
+The roll also supports specifying building with/for python versions other than
+the one included with the o/s.  To use this feature, specify a `ROLLPY` make
+variable that specifies a python modulefile, e.g.,
+
+```shell
+% make ROLLPY=opt-python 2>&1 | tee build.log
+```
+
 
 ## Installation
 

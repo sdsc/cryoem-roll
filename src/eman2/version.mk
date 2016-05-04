@@ -6,9 +6,13 @@ ifndef ROLLMPI
 endif
 MPINAME := $(firstword $(subst /, ,$(ROLLMPI)))
 
+ifndef ROLLPY
+  ROLLPY = python
+endif
+
 NAME           = sdsc-eman2
 VERSION        = 2.1
-RELEASE        = 4
+RELEASE        = 5
 PKGROOT        = /opt/eman2
 
 SRC_SUBDIR     = eman2

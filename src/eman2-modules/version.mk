@@ -6,10 +6,14 @@ ifndef ROLLMPI
 endif
 MPINAME := $(firstword $(subst /, ,$(ROLLMPI)))
 
+ifndef ROLLPY
+  ROLLPY = python
+endif
+
 PACKAGE     = eman2
 CATEGORY    = applications
 NAME        = sdsc-$(PACKAGE)-modules
-RELEASE     = 5
+RELEASE     = 6
 PKGROOT     = /opt/modulefiles/$(CATEGORY)/$(PACKAGE)
 
 VERSION_SRC = $(REDHAT.ROOT)/src/$(PACKAGE)/version.mk
