@@ -27,13 +27,17 @@ Rocks development machine.
 The sdsc-roll must be installed on the build machine, since the build process
 depends on make include files provided by that roll.
 
-The roll sources assume that modulefiles provided by SDSC compiler and mpi
+The roll sources assume that modulefiles provided by SDSC compiler, cmake, and mpi
 rolls are available, but it will build without them as long as the environment
 variables they provide are otherwise defined.
 
-The build process requires the BOOST, HDF5 and FFTW libraries and assumes that the modulefiles provided by the SDSC boost-roll, hdf-roll and fftw-roll are available.
+The build process requires the BOOST, GSL, FFTW, HDF5 and MKL libraries and assumes that the
+modulefiles provided by the corresponding SDSC rolls are available.
+It similarly requires python modules provided the by SDSC scipy roll and
+assumes that the scipy modulefile is availale.  It will build without the
+modulefiles as long as the environment variables they provide are otherwise
+defined.
 
-It will build without the modulefiles as long as the environment variables they provided are set.
 
 ## Building
 
@@ -71,6 +75,9 @@ variable that specifies a python modulefile, e.g.,
 ```shell
 % make ROLLPY=opt-python 2>&1 | tee build.log
 ```
+
+The roll also supports a `ROLLOPTS` make variable value of 'cuda', indicating
+that a cuda-enabled version of eman2 should be included in the build.
 
 
 ## Installation
