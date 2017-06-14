@@ -130,6 +130,7 @@ build: $(SRC_DIRS)
           cd ..; \
           mkdir $(SOURCE_DIR)/build; \
           cd $(SOURCE_DIR)/build; \
+	  numpyIncludePath=`find $${PYTHONROOT}/lib/python$${pyvers} -name arrayobject.h | sed 's/numpy.arrayobject.h//'`; \
           cmake -DEMAN_INSTALL_PREFIX=$(ROOT)/$(PKGROOT) \
            -DCMAKE_C_COMPILER=mpicc \
            -DCMAKE_CXX_COMPILER=mpicxx \
@@ -138,7 +139,7 @@ build: $(SRC_DIRS)
            -DBOOST_INCLUDE_PATH=$${BOOSTHOME}/include \
            -DFREETYPE_INCLUDE_PATH=/usr/include/freetype2 \
            -DBOOST_LIBRARY=$${BOOST_HOME}/lib $(CUDAOPTS) \
-           -DNUMPY_INCLUDE_PATH=$${PYTHONROOT}/lib/python$${pyvers}/site-packages/numpy/core/include \
+           -DNUMPY_INCLUDE_PATH=$$numpyIncludePath \
            -DPYTHON_LIBRARY=$${PYTHONROOT}/lib  .. \
 	)
 	@echo "::: Package $(NAME) build complete :::"

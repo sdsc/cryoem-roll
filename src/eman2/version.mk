@@ -12,7 +12,7 @@ endif
 
 NAME           = sdsc-eman2
 VERSION        = 2.1
-RELEASE        = 5
+RELEASE        = 6
 PKGROOT        = /opt/eman2
 
 SRC_SUBDIR     = eman2
