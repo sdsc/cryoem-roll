@@ -63,8 +63,6 @@ include $(SDSCDEVEL)/Rules.mk
 
 DESCRIBE_GSL = echo built with gsl $(call GET_MODULE_VERSION, gsl)
 MODULE_LOAD_GSL = $(call MODULE_LOAD_PACKAGE, gsl, GSLHOME)
-DESCRIBE_SCIPY = echo built with scipy $(call GET_MODULE_VERSION, scipy)
-MODULE_LOAD_SCIPY = $(call MODULE_LOAD_PACKAGE, scipy, SCIPYHOME)
 
 CACHE_DIR=$(REDHAT.ROOT)/cache
 
@@ -79,22 +77,22 @@ $(NAME).spec: DESCRIPTION LICENSE
 
 DESCRIPTION:
 	$(MODULE_LOAD_CC); \
-	$(MODULE_LOAD_PYTHON); \
 	( \
-          $(DESCRIBE_PKG); \
-          $(DESCRIBE_CC); \
-          $(DESCRIBE_MPI); \
-          $(DESCRIBE_PYTHON); \
-          $(DESCRIBE_BOOST); \
-          $(DESCRIBE_MKL); \
-          $(DESCRIBE_FFTW); \
-          $(DESCRIBE_HDF5); \
-          $(DESCRIBE_SCIPY); \
-          $(DESCRIBE_GSL); \
-          if test "$(CUDABUILD)" = "yes"; then \
-             $(DESCRIBE_CUDA) >> $@; \
-           fi \
+	  $(DESCRIBE_PKG); \
+	  $(DESCRIBE_CC); \
+	  $(DESCRIBE_MPI); \
+	  $(DESCRIBE_BOOST); \
+	  $(DESCRIBE_MKL); \
+	  $(DESCRIBE_FFTW); \
+	  $(DESCRIBE_HDF5); \
+	  $(DESCRIBE_SCIPY); \
+	  $(DESCRIBE_GSL) \
 	) > $@
+	$(MODULE_LOAD_PYTHON); \
+	$(DESCRIBE_PYTHON) >> $@; \
+	if test "$(CUDABUILD)" = "yes"; then \
+	  $(DESCRIBE_CUDA) >> $@; \
+	fi
 
 LICENSE: $(SRC_DIRS)
 	$(CHECK_LICENSE_FILES)
@@ -104,18 +102,18 @@ build: $(SRC_DIRS)
 	patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch
 	( \
 	  $(MODULE_LOAD_CC); \
-          $(MODULE_LOAD_MPI); \
-          $(MODULE_LOAD_CMAKE); \
-          $(MODULE_LOAD_PYTHON); \
-          $(MODULE_LOAD_BOOST); \
-          $(MODULE_LOAD_MKL); \
-          $(MODULE_LOAD_FFTW); \
-          $(MODULE_LOAD_HDF5); \
-          if test "$(CUDABUILD)" = "yes"; then \
-             $(MODULE_LOAD_CUDA); \
-          fi; \
+	  $(MODULE_LOAD_MPI); \
+	  $(MODULE_LOAD_CMAKE); \
+	  $(MODULE_LOAD_BOOST); \
+	  $(MODULE_LOAD_MKL); \
+	  $(MODULE_LOAD_FFTW); \
+	  $(MODULE_LOAD_HDF5); \
 	  $(MODULE_LOAD_SCIPY); \
 	  $(MODULE_LOAD_GSL); \
+	  $(MODULE_LOAD_PYTHON); \
+	  if test "$(CUDABUILD)" = "yes"; then \
+	    $(MODULE_LOAD_CUDA); \
+	  fi; \
 	  pyvers=`python --version 2>&1 | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`; \
           export LDFLAGS="-lGL -lGLU"; \
           cd $(FTGL_DIR); \
