@@ -93,6 +93,9 @@ build: $(SRC_DIRS)
           cd ../..; \
           export CPPFLAGS="-I$${FFTWHOME}/include `bin/fltk-config --cxxflags`"; \
           export LDFLAGS="-L$${FFTWHOME}/lib `bin/fltk-config --ldflags`"; \
+	  if test "$(COMPILERNAME)" = "gnu"; then \
+	    export CXXFLAGS='-std=c++98'; \
+	  fi; \
          ./configure --enable-mpi prefix=$(PKGROOT); \
           $(MAKE) -j 8; \
 	)
