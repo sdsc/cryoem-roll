@@ -10,7 +10,7 @@ MPINAME := $(firstword $(subst /, ,$(ROLLMPI)))
 
 NAME           = sdsc-relion
 VERSION        = 1.4
-RELEASE        = 1
+RELEASE        = 2
 PKGROOT        = /opt/relion
 
 SRC_SUBDIR     = relion
