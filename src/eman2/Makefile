@@ -73,6 +73,14 @@ ifneq ("$(ROLLOPTS)", "$(subst cuda,,$(ROLLOPTS))")
   CUDAOPTS=-DENABLE_SPARX_CUDA=yes -DENABLE_EMAN_CUDA=yes
 endif
 
+BOOST_TOOLSET = gcc
+CFLAGS = 
+ifeq ("$(COMPILERNAME)", "intel")
+  BOOST_TOOLSET = intel-linux
+else ifeq ("$(COMPILERNAME)", "pgi")
+  BOOST_TOOLSET = pgi
+endif
+
 $(NAME).spec: DESCRIPTION LICENSE
 
 DESCRIPTION:
@@ -81,7 +89,6 @@ DESCRIPTION:
 	  $(DESCRIBE_PKG); \
 	  $(DESCRIBE_CC); \
 	  $(DESCRIBE_MPI); \
-	  $(DESCRIBE_BOOST); \
 	  $(DESCRIBE_MKL); \
 	  $(DESCRIBE_FFTW); \
 	  $(DESCRIBE_HDF5); \
@@ -104,7 +111,6 @@ build: $(SRC_DIRS)
 	  $(MODULE_LOAD_CC); \
 	  $(MODULE_LOAD_MPI); \
 	  $(MODULE_LOAD_CMAKE); \
-	  $(MODULE_LOAD_BOOST); \
 	  $(MODULE_LOAD_MKL); \
 	  $(MODULE_LOAD_FFTW); \
 	  $(MODULE_LOAD_HDF5); \
@@ -120,6 +126,10 @@ build: $(SRC_DIRS)
           ./configure CC=$(CC) CXX=$(CXX) --prefix=$(CACHE_DIR)/ftgl; \
           make; \
           make install; \
+	  cd ../$(BOOST_DIR); \
+	  cp tools/build/v2/user-config.jam .; \
+	  ./bootstrap.sh --prefix=$(CACHE_DIR)/boost --with-toolset=$(BOOST_TOOLSET); \
+	  ./b2 cxxflags="-fPIC" cflags="-fPIC" -a install; \
           export FFTWDIR=$${FFTWHOME}; \
           export GSLDIR=$${GSLHOME}; \
           export HDF5DIR=$${HDF5HOME}; \
@@ -134,9 +144,9 @@ build: $(SRC_DIRS)
            -DCMAKE_CXX_COMPILER=mpicxx \
            -DFTGL_INCLUDE_PATH=$(CACHE_DIR)/ftgl/include \
            -DFTGL_LIBRARY=$(CACHE_DIR)/ftgl/lib \
-           -DBOOST_INCLUDE_PATH=$${BOOSTHOME}/include \
+           -DBOOST_INCLUDE_PATH=$(CACHE_DIR)/boost/include \
            -DFREETYPE_INCLUDE_PATH=/usr/include/freetype2 \
-           -DBOOST_LIBRARY=$${BOOST_HOME}/lib $(CUDAOPTS) \
+           -DBOOST_LIBRARY=$(CACHE_DIR)/boost/lib $(CUDAOPTS) \
            -DNUMPY_INCLUDE_PATH=$$numpyIncludePath \
            -DPYTHON_LIBRARY=$${PYTHONROOT}/lib  .. \
 	)
@@ -149,7 +159,6 @@ install::
 	  $(MODULE_LOAD_CC); \
           $(MODULE_LOAD_MPI); \
           $(MODULE_LOAD_CMAKE); \
-          $(MODULE_LOAD_BOOST); \
           $(MODULE_LOAD_MKL); \
           $(MODULE_LOAD_HDF5); \
           if test "$(CUDABUILD)" = "yes"; then \
@@ -157,7 +166,8 @@ install::
           fi; \
 	  $(MODULE_LOAD_SCIPY); \
 	  $(MODULE_LOAD_GSL); \
-          make install \
+          make install; \
+	  cp -r $(CACHE_DIR)/boost/lib/* $(ROOT)/$(PKGROOT)/lib/ \
 	)
 	$(INSTALL_LICENSE_FILES)
 	@echo "::: Package $(NAME) install complete :::"
