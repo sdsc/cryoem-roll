@@ -38,5 +38,5 @@ FTGL_DIR       = $(subst -rc,~rc,$(FTGL_PKG:%.$(FTGL_SUFFIX)=%))
 ZIP_PKGS       = $(SOURCE_PKG)
 TAR_GZ_PKGS    = $(BOOST_PKG) $(FTGL_PKG)
 
-RPM.EXTRAS     = AutoReq:No\nAutoProv:No
+RPM.EXTRAS     = AutoReq:No\nAutoProv:No\n%define __os_install_post /usr/lib/rpm/brp-compress
 RPM.PREFIX     = $(PKGROOT)
