@@ -10,7 +10,7 @@ MPINAME := $(firstword $(subst /, ,$(ROLLMPI)))
 
 NAME           = sdsc-relion
 VERSION        = 1.4
-RELEASE        = 2
+RELEASE        = 3
 PKGROOT        = /opt/relion
 
 SRC_SUBDIR     = relion
@@ -23,6 +23,7 @@ SOURCE_DIR     = $(SOURCE_PKG:%.$(SOURCE_SUFFIX)=%)
 
 VFLTK          = fltk-1.3.0
 
-TAR_BZ2_PKGS       = $(SOURCE_PKG)
+TAR_BZ2_PKGS   = $(SOURCE_PKG)
 
-RPM.EXTRAS     = AutoReq:No
+RPM.EXTRAS     = AutoReq:No\nAutoProv:No
+RPM.PREFIX     = $(PKGROOT)
