@@ -31,7 +31,7 @@ The roll sources assume that modulefiles provided by SDSC compiler, cmake, and m
 rolls are available, but it will build without them as long as the environment
 variables they provide are otherwise defined.
 
-The build process requires the BOOST, GSL, FFTW, HDF5 and MKL libraries and assumes that the
+The build process requires the FFTW and MKL libraries and assumes that the
 modulefiles provided by the corresponding SDSC rolls are available.
 It similarly requires python modules provided the by SDSC scipy roll and
 assumes that the scipy modulefile is availale.  It will build without the
@@ -54,8 +54,7 @@ roll on a Rocks development appliance, you need to copy the roll to your Rocks
 frontend before continuing with installation.
 
 This roll source supports building with different compilers and for different
-MPI flavors and python installations.  The `ROLLCOMPILER`, `ROLLMPI`, and
-`ROLLPY` make variables can be used to specify the names of compiler, MPI, and
+MPI flavors.  The `ROLLCOMPILER`, `ROLLMPI` make variables can be used to specify the names of compiler, MPI, and
 python modulefiles to use for building the software, e.g.,
 
 ```shell
@@ -68,9 +67,6 @@ the `ROLLMPI` variable, and any python modulefile name for the ROLLPY variable.
 The default values are "gnu", "rocks-openmpi", and "python".
 
 Note that eman2 is always built with the gnu compiler.
-
-The roll also supports a `ROLLOPTS` make variable value of 'cuda', indicating
-that a cuda-enabled version of eman2 should be included in the build.
 
 
 ## Installation

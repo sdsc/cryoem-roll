@@ -3,10 +3,8 @@ module-whatis "eman2"
 module-whatis "Version: VERSION"
 module-whatis "Description: eman2"
 module-whatis "Compiler: ROLLCOMPILER"
-module-whatis "mpi: ROLLMPI"
 setenv EMAN2HOME /opt/eman2
 prepend-path PATH /opt/eman2/bin
-prepend-path PYTHONPATH /opt/eman2/bin:/opt/eman2/lib
-prepend-path LD_LIBRARY_PATH /opt/eman2/lib
-module load python scipy ROLLCOMPILER ROLLMPI gsl hdf5 fftw
-setenv LD_PRELOAD /opt/eman2/lib/libboost_python.so
+prepend-path PYTHONPATH /opt/eman2
+prepend-path LD_LIBRARY_PATH /opt/eman2/lib:/opt/eman2/lib/python2.7/site-packages
+module load ROLLCOMPILER
