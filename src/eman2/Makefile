@@ -1,11 +1,9 @@
 #
-# $Id$
-#
 # @Copyright@
 #
-# 				Rocks(r)
-# 		         www.rocksclusters.org
-# 		         version 7.0 (Manzanita)
+#                               Rocks(r)
+#                        www.rocksclusters.org
+#                        version 7.0 (Manzanita)
 #
 # Copyright (c) 2000 - 2017 The Regents of the University of California.
 # All rights reserved.
@@ -25,9 +23,9 @@
 # 3. All advertising and press materials, printed or electronic, mentioning
 # features or use of this software must display the following acknowledgement:
 #
-# 	"This product includes software developed by the Rocks(r)
-# 	Cluster Group at the San Diego Supercomputer Center at the
-# 	University of California, San Diego and its contributors."
+#       "This product includes software developed by the Rocks(r)
+#       Cluster Group at the San Diego Supercomputer Center at the
+#       University of California, San Diego and its contributors."
 #
 # 4. Except as permitted for the purposes of acknowledgment in paragraph 3,
 # neither the name or logo of this software nor the names of its
@@ -53,6 +51,11 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # @Copyright@
+#
+# $Log$
+#
+
+.phony: $(CONDADOWNLOADS)
 
 REDHAT.ROOT = $(CURDIR)/../../
 
@@ -61,25 +64,6 @@ include Rules.mk
 include $(SDSCDEVEL)/Pull.mk
 include $(SDSCDEVEL)/Rules.mk
 
-DESCRIBE_GSL = echo built with gsl $(call GET_MODULE_VERSION, gsl)
-MODULE_LOAD_GSL = $(call MODULE_LOAD_PACKAGE, gsl, GSLHOME)
-
-CACHE_DIR=$(REDHAT.ROOT)/cache
-
-CUDABUILD = no
-CUDAOPTS=
-ifneq ("$(ROLLOPTS)", "$(subst cuda,,$(ROLLOPTS))")
-  CUDABUILD = yes
-  CUDAOPTS=-DENABLE_SPARX_CUDA=yes -DENABLE_EMAN_CUDA=yes
-endif
-
-BOOST_TOOLSET = gcc
-CFLAGS = 
-ifeq ("$(COMPILERNAME)", "intel")
-  BOOST_TOOLSET = intel-linux
-else ifeq ("$(COMPILERNAME)", "pgi")
-  BOOST_TOOLSET = pgi
-endif
 
 $(NAME).spec: DESCRIPTION LICENSE
 
@@ -88,89 +72,62 @@ DESCRIPTION:
 	( \
 	  $(DESCRIBE_PKG); \
 	  $(DESCRIBE_CC); \
-	  $(DESCRIBE_MPI); \
-	  $(DESCRIBE_MKL); \
-	  $(DESCRIBE_FFTW); \
-	  $(DESCRIBE_HDF5); \
-	  $(DESCRIBE_SCIPY); \
-	  $(DESCRIBE_GSL) \
 	) > $@
-	$(MODULE_LOAD_PYTHON); \
-	$(DESCRIBE_PYTHON) >> $@; \
-	if test "$(CUDABUILD)" = "yes"; then \
-	  $(DESCRIBE_CUDA) >> $@; \
-	fi
 
 LICENSE: $(SRC_DIRS)
 	$(CHECK_LICENSE_FILES)
 	echo "BSD/GNU" > $@
 
-build: $(SRC_DIRS)
-	patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch
+build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
 	( \
-	  $(MODULE_LOAD_CC); \
-	  $(MODULE_LOAD_MPI); \
-	  $(MODULE_LOAD_CMAKE); \
-	  $(MODULE_LOAD_MKL); \
-	  $(MODULE_LOAD_FFTW); \
-	  $(MODULE_LOAD_HDF5); \
-	  $(MODULE_LOAD_SCIPY); \
-	  $(MODULE_LOAD_GSL); \
-	  $(MODULE_LOAD_PYTHON); \
-	  if test "$(CUDABUILD)" = "yes"; then \
-	    $(MODULE_LOAD_CUDA); \
-	  fi; \
-	  pyvers=`python --version 2>&1 | grep -o '[0-9][0-9]*\.[0-9][0-9]*'`; \
-          export LDFLAGS="-lGL -lGLU"; \
-          cd $(FTGL_DIR); \
-          ./configure CC=$(CC) CXX=$(CXX) --prefix=$(CACHE_DIR)/ftgl; \
-          make; \
-          make install; \
-	  cd ../$(BOOST_DIR); \
-	  cp tools/build/v2/user-config.jam .; \
-	  ./bootstrap.sh --prefix=$(CACHE_DIR)/boost --with-toolset=$(BOOST_TOOLSET); \
-	  ./b2 cxxflags="-fPIC" cflags="-fPIC" -a install; \
-          export FFTWDIR=$${FFTWHOME}; \
-          export GSLDIR=$${GSLHOME}; \
-          export HDF5DIR=$${HDF5HOME}; \
-          export PYTHON_ROOT=$${PYTHONROOT}; \
-          export PYTHON_VERSION=`python -c "from __future__ import print_function;import sys; print(sys.version[:3])"`; \
-          cd ..; \
-          mkdir $(SOURCE_DIR)/build; \
-          cd $(SOURCE_DIR)/build; \
-	  numpyIncludePath=`find $${PYTHONROOT}/lib/python$${pyvers} -name arrayobject.h | sed 's/numpy.arrayobject.h//'`; \
-          cmake -DEMAN_INSTALL_PREFIX=$(ROOT)/$(PKGROOT) \
-           -DCMAKE_C_COMPILER=mpicc \
-           -DCMAKE_CXX_COMPILER=mpicxx \
-           -DFTGL_INCLUDE_PATH=$(CACHE_DIR)/ftgl/include \
-           -DFTGL_LIBRARY=$(CACHE_DIR)/ftgl/lib \
-           -DBOOST_INCLUDE_PATH=$(CACHE_DIR)/boost/include \
-           -DFREETYPE_INCLUDE_PATH=/usr/include/freetype2 \
-           -DBOOST_LIBRARY=$(CACHE_DIR)/boost/lib $(CUDAOPTS) \
-           -DNUMPY_INCLUDE_PATH=$$numpyIncludePath \
-           -DPYTHON_LIBRARY=$${PYTHONROOT}/lib  .. \
-	)
-	@echo "::: Package $(NAME) build complete :::"
-	
-install::
-	mkdir -p $(ROOT)/$(PKGROOT)
+          cd $(MINICONDA_DIR); \
+          bash Miniconda2-latest-Linux-x86_64.sh -b -p $(PWD)/miniconda2 \
+        )
+
+$(CONDADOWNLOADS):
 	( \
-	  cd $(SOURCE_DIR)/build; \
-	  $(MODULE_LOAD_CC); \
-          $(MODULE_LOAD_MPI); \
-          $(MODULE_LOAD_CMAKE); \
-          $(MODULE_LOAD_MKL); \
-          $(MODULE_LOAD_HDF5); \
-          if test "$(CUDABUILD)" = "yes"; then \
-             $(MODULE_LOAD_CUDA); \
-          fi; \
-	  $(MODULE_LOAD_SCIPY); \
-	  $(MODULE_LOAD_GSL); \
-          make install; \
-	  cp -r $(CACHE_DIR)/boost/lib/* $(ROOT)/$(PKGROOT)/lib/ \
+            export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
+            export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
+	    conda install --offline $(CURDIR)/$@.tar.bz2 \
+        )
+
+$(CONDADOWNLOAD_PKGS):
+	@echo "::: Downloading $(DL.SERVER)/$(DL.PATH)/$@ :::"
+	@ if [ -f $@ ]; then \
+		echo "::: $@ exists. Skipping... :::" ; \
+	else \
+		$(DL.CMD) $(DL.OPTS) $(DL.SERVER)/$(DL.PATH)/$@ ; \
+	        echo "::: Verifying size of $@ :::" ; \
+	        $(GREP.CMD) `$(STAT.CMD) --printf="%s" $@` $(VERIFY.HASHES) ; \
+	        echo "::: Verifying hash of $@ :::" ; \
+        	$(GREP.CMD) `$(VERIFY.CMD) $(VERIFY.OPTS) $@ ` $(VERIFY.HASHES) ; \
+        	echo "" ; \
+	fi
+
+install:: $(CONDADOWNLOADS)
+	mkdir -p -m 755 $(ROOT)/$(PKGROOT)
+	$(PKGROOT_BIND_MOUNT)
+	( \
+           patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch; \
+	   $(MODULE_LOAD_CC); \
+	   $(MODULE_LOAD_CMAKE); \
+           export LDFLAGS="-lGL -lGLU"; \
+           export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
+           export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
+           export PYTHON_ROOT=$${PYTHONROOT}; \
+           export PYTHON_VERSION=`python -c "from __future__ import print_function;import sys; print(sys.version[:3])"`; \
+           cd $(SOURCE_DIR); \
+           mkdir build; \
+           cd build; \
+           cmake -DENABLE_OPTIMIZE_MACHINE=ON ..; \
+           make; \
+           make install; \
+           rm -rf $(PKGROOT)/pkgs/*; \
+           mv $(CURDIR)/miniconda2/* $(ROOT)/$(PKGROOT) \
 	)
 	$(INSTALL_LICENSE_FILES)
 	@echo "::: Package $(NAME) install complete :::"
+	
 
 clean::
-	rm -rf $(SOURCE_DIR) DESCRIPTION LICENSE
+	rm -rf $(SOURCE_DIR) $(MINICONDA_DIR) $(CONDADOWNLOAD_PKGS) DESCRIPTION LICENSE
