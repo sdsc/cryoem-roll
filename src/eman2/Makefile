@@ -124,9 +124,9 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
                   sum=$$(( $$sum - $$fileSize )); \
                   echo "NEW PACKAGE: OLD SUM $$sum"; \
                   tar cvf $(TEMP_DIRS)/package.tar `cat $(TEMP_DIRS)/.files`; \
-                  cd $(TEMP_DIRS)/build-eman2$$packageCount; \
+                  cd $(TEMP_DIRS)/build-eman2_$$packageCount; \
                   tar xvf $(TEMP_DIRS)/package.tar; \
-                  cd $(TEMP_DIRS)/build-eman2; \
+                  cd $(CURDIR)/miniconda2; \
                   sum=$$fileSize; \
                   packageCount=$$(( $$packageCount + 1 )); \
                   mkdir  -p $(TEMP_DIRS)/build-eman2_$$packageCount; \
@@ -136,9 +136,9 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           done; \
           echo $$packageCount > $(TEMP_DIRS)/packageCount; \
           tar cvf $(TEMP_DIRS)/package.tar `cat $(TEMP_DIRS)/.files`; \
-          cd $(TEMP_DIRS)/build-matlab_$$packageCount; \
+          cd $(TEMP_DIRS)/build-eman2_$$packageCount; \
           tar xvf $(TEMP_DIRS)/package.tar; \
-          cd $(TEMP_DIRS)/build-matlab; \
+          cd $(CURDIR)/miniconda2; \
           rm -f $(TEMP_DIRS)/$$$$.tmp; \
           rm -f $(TEMP_DIRS)/.files; \
           rm -f $(TEMP_DIRS)/package.tar \
