@@ -76,4 +76,4 @@ default:
 
 distclean:: clean
 	-rm -f _arch build.log
-	-rm -rf RPMS SRPMS cache
+	-rm -rf RPMS SRPMS cache src/build-*
