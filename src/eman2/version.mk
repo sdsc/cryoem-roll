@@ -1,3 +1,6 @@
+# Intel compilers through 2018 appear to build python plugins
+# incorrectly--specifically, libpyBoxingTools2.so doesn't
+# contain a definition of initlibpyBoxingTools2. Gnu works.
 override ROLLCOMPILER = gnu
 COMPILERNAME := $(firstword $(subst /, ,$(ROLLCOMPILER)))
 
