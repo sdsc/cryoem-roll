@@ -107,7 +107,7 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           rm -rf $(PKGROOT)/pkgs/*; \
           packageCount=1; \
           mkdir  -p $(TEMP_DIRS)/build-eman2_$${packageCount}; \
-          cd  miniconda2; \
+          cd  ../miniconda2; \
           find . ! -type d -exec ls -l {} \; >$(TEMP_DIRS)/$$$$.tmp; \
           find . \( -name .\* -a ! -type d \) -exec ls -l {} \; >>$(TEMP_DIRS)/$$$$.tmp; \
           sum=0; \
