@@ -90,6 +90,7 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           for package in $(CONDADOWNLOADS); do \
 	    conda install --offline $(CURDIR)/$${package}.tar.bz2; \
           done; \
+          rm -rf pkgs/*; \
           patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch; \
 	  $(MODULE_LOAD_CC); \
 	  $(MODULE_LOAD_CMAKE); \
@@ -104,7 +105,6 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           cmake -DENABLE_OPTIMIZE_MACHINE=ON ..; \
           make; \
           make install; \
-          rm -rf $(PKGROOT)/pkgs/*; \
           packageCount=1; \
           mkdir  -p $(TEMP_DIRS)/build-eman2_$${packageCount}; \
           cd  $(CURDIR)/miniconda2; \
