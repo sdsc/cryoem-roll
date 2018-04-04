@@ -14,7 +14,7 @@ All rights reserved. Rocks(r) v7.0 www.rocksclusters.org
 </copyright>
 
 <package>sdsc-cryoem-roll-test</package>
-<package>sdsc-eman2</package>
+<package>sdsc-eman2_PACKAGE</package>
 <package>sdsc-eman2-modules</package>
 <package>sdsc-frealign</package>
 <package>sdsc-frealign-modules</package>

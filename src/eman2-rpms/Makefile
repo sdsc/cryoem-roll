@@ -56,24 +56,38 @@
 #
 # $Log$
 #
+#
+REDHAT.ROOT = $(CURDIR)/../../
+NODE_FILE = $(REDHAT.ROOT)/nodes/cryoem-common.xml
+MANIFEST_DIR = $(REDHAT.ROOT)
+TEMP_DIRS = $(REDHAT.ROOT)/src/eman2
 
-PACKAGES=4
+-include $(ROCKSROOT)/etc/Rules.mk
+include Rules.mk
+include $(SDSCDEVEL)/Pull.mk
+include $(SDSCDEVEL)/Rules.mk
 
-ifndef ROLLCOMPILER
-  ROLLCOMPILER = gnu
-endif
 
-ifndef ROLLMPI
-  ROLLMPI = rocks-openmpi
-endif
+TEMP_DIRS = $(REDHAT.ROOT)/src
+BUILDIT = 1
 
--include $(ROLLSROOT)/etc/Rolls.mk
-include Rolls.mk
+$(VERSION_INC): $(VERSION_SRC)
+	/bin/grep 'VERSION.*=' $(VERSION_SRC) > $@
 
-default:
-	cp nodes/cryoem-common.xml.in nodes/cryoem-common.xml
-	$(MAKE) ROLLCOMPILER="$(ROLLCOMPILER)" ROLLMPI="$(ROLLMPI)" PACKAGES=$(PACKAGES) roll
+build:
 
-distclean:: clean
-	-rm -f _arch build.log
-	-rm -rf RPMS SRPMS cache
+install:: 
+	mkdir  -p -m 755 $(ROOT)/$(PKGROOT)
+	( \
+           if test $(BUILDIT) -eq 1; then \
+             packageCount=`cat $(TEMP_DIRS)/packageCount`; \
+             for PACKAGE in `seq 1 $${packageCount}`; do \
+               make NAME=$(NAME)_$${PACKAGE} BUILDDIR=build-eman2_$${PACKAGE} BUILDIT=0 rpm; \
+             done; \
+           else \
+             cp -r $(TEMP_DIRS)/$(BUILDDIR)/* -d $(ROOT)/$(PKGROOT); \
+           fi  \
+        )
+	@echo "::: Package $(NAME) install complete :::"
+
+clean::

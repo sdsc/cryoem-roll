@@ -64,6 +64,9 @@ include Rules.mk
 include $(SDSCDEVEL)/Pull.mk
 include $(SDSCDEVEL)/Rules.mk
 
+NODE_FILE = $(REDHAT.ROOT)/nodes/cryoem-common.xml
+TEMP_DIRS = $(REDHAT.ROOT)/src
+
 
 $(NAME).spec: DESCRIPTION LICENSE
 
@@ -81,14 +84,64 @@ LICENSE: $(SRC_DIRS)
 build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
 	( \
           cd $(MINICONDA_DIR); \
-          bash Miniconda2-latest-Linux-x86_64.sh -b -p $(PWD)/miniconda2 \
-        )
-
-$(CONDADOWNLOADS):
-	( \
-            export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
-            export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
-	    conda install --offline $(CURDIR)/$@.tar.bz2 \
+          bash Miniconda2-latest-Linux-x86_64.sh -b -p $(PWD)/miniconda2; \
+          export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
+          export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
+          for package in $(CONDADOWNLOADS); do \
+	    conda install --offline $(CURDIR)/$${package}.tar.bz2; \
+          done; \
+          patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch; \
+	  $(MODULE_LOAD_CC); \
+	  $(MODULE_LOAD_CMAKE); \
+          export LDFLAGS="-lGL -lGLU"; \
+          export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
+          export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
+          export PYTHON_ROOT=$${PYTHONROOT}; \
+          export PYTHON_VERSION=`python -c "from __future__ import print_function;import sys; print(sys.version[:3])"`; \
+          cd ../$(SOURCE_DIR); \
+          mkdir build; \
+          cd build; \
+          cmake -DENABLE_OPTIMIZE_MACHINE=ON ..; \
+          make; \
+          make install; \
+          rm -rf $(PKGROOT)/pkgs/*; \
+          packageCount=1; \
+          mkdir  -p $(TEMP_DIRS)/build-eman2_$${packageCount}; \
+          cd  $(TEMP_DIRS)/build-eman2; \
+          find . ! -type d -exec ls -l {} \; >$(TEMP_DIRS)/$$$$.tmp; \
+          find . \( -name .\* -a ! -type d \) -exec ls -l {} \; >>$(TEMP_DIRS)/$$$$.tmp; \
+          sum=0; \
+          total=`du -b -s|awk '{print $$1}'`; \
+          maxPackageSize=$$(( $$total / ( $(PACKAGES) ) )); \
+          echo "MAX SIZE=$$maxPackageSize"; \
+          exec <$(TEMP_DIRS)/$$$$.tmp; \
+          cat /dev/null > $(TEMP_DIRS)/.files; \
+          while read line; do \
+               fileSize=`echo $$line |awk '{print $$5}'`; \
+               fileName=`echo $$line |awk '{print $$9}'`; \
+               sum=$$(( $$sum + $$fileSize )); \
+               if test $$sum -ge $$maxPackageSize; then \
+                  sum=$$(( $$sum - $$fileSize )); \
+                  echo "NEW PACKAGE: OLD SUM $$sum"; \
+                  tar cvf $(TEMP_DIRS)/package.tar `cat $(TEMP_DIRS)/.files`; \
+                  cd $(TEMP_DIRS)/build-eman2$$packageCount; \
+                  tar xvf $(TEMP_DIRS)/package.tar; \
+                  cd $(TEMP_DIRS)/build-eman2; \
+                  sum=$$fileSize; \
+                  packageCount=$$(( $$packageCount + 1 )); \
+                  mkdir  -p $(TEMP_DIRS)/build-eman2_$$packageCount; \
+                  cat /dev/null > $(TEMP_DIRS)/.files; \
+               fi; \
+               echo $$fileName >> $(TEMP_DIRS)/.files; \
+          done; \
+          echo $$packageCount > $(TEMP_DIRS)/packageCount; \
+          tar cvf $(TEMP_DIRS)/package.tar `cat $(TEMP_DIRS)/.files`; \
+          cd $(TEMP_DIRS)/build-matlab_$$packageCount; \
+          tar xvf $(TEMP_DIRS)/package.tar; \
+          cd $(TEMP_DIRS)/build-matlab; \
+          rm -f $(TEMP_DIRS)/$$$$.tmp; \
+          rm -f $(TEMP_DIRS)/.files; \
+          rm -f $(TEMP_DIRS)/package.tar \
         )
 
 $(CONDADOWNLOAD_PKGS):
@@ -104,27 +157,16 @@ $(CONDADOWNLOAD_PKGS):
         	echo "" ; \
 	fi
 
-install:: $(CONDADOWNLOADS)
+install::
 	mkdir -p -m 755 $(ROOT)/$(PKGROOT)
-	$(PKGROOT_BIND_MOUNT)
 	( \
-           patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch; \
-	   $(MODULE_LOAD_CC); \
-	   $(MODULE_LOAD_CMAKE); \
-           export LDFLAGS="-lGL -lGLU"; \
-           export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
-           export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
-           export PYTHON_ROOT=$${PYTHONROOT}; \
-           export PYTHON_VERSION=`python -c "from __future__ import print_function;import sys; print(sys.version[:3])"`; \
-           cd $(SOURCE_DIR); \
-           mkdir build; \
-           cd build; \
-           cmake -DENABLE_OPTIMIZE_MACHINE=ON ..; \
-           make; \
-           make install; \
-           rm -rf $(PKGROOT)/pkgs/*; \
-           mv $(CURDIR)/miniconda2/* $(ROOT)/$(PKGROOT) \
-	)
+          perl -pi -e "s!PKGROOT!$(PKGROOT)!" $(NODE_FILE); \
+          packageCount=`cat $(TEMP_DIRS)/packageCount`; \
+          for PACKAGE in `seq 1 $${packageCount}`; do \
+               perl -pi -e "print and s/$(NAME)_PACKAGE/$(NAME)_$${PACKAGE}/ if m/$(NAME)_PACKAGE/" $(NODE_FILE); \
+          done; \
+          perl -pi -e '$$_ = "" if m/$(NAME)_PACKAGE/' $(NODE_FILE) \
+        )
 	$(INSTALL_LICENSE_FILES)
 	@echo "::: Package $(NAME) install complete :::"
 	
