@@ -84,6 +84,9 @@ endif
 
 build: $(SRC_DIRS)
 	( \
+          if test "$(COMPILERNAME)" = "intel"; then \
+               patch $(SOURCE_DIR)/src/Makefile_linux_amd64_intel_mp patch-files/Makefile_linux_amd64_intel_mp.patch; \
+          fi; \
 	  $(MODULE_LOAD_CC); \
           $(MODULE_LOAD_MKL); \
           cd $(SOURCE_DIR)/src; \
