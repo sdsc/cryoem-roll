@@ -80,6 +80,8 @@ LICENSE: $(SRC_DIRS)
 
 build: $(SRC_DIRS)
 	mkdir -p $(CACHE_DIR)/fltk
+	patch $(SOURCE_DIR)/src/Healpix_2.15a/cxxutils.cc  patch-files/cxxutils.cc.patch
+	patch $(SOURCE_DIR)/src/mpi.h  patch-files/mpi.h.patch
 	( \
 	  $(MODULE_LOAD_CC); \
 	  $(MODULE_LOAD_MPI); \
