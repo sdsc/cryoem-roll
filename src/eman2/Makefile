@@ -83,6 +83,7 @@ LICENSE: $(SRC_DIRS)
 
 build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
 	( \
+          patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch; \
           cd $(MINICONDA_DIR); \
           bash Miniconda2-latest-Linux-x86_64.sh -b -p $(PWD)/miniconda2; \
           export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
@@ -90,7 +91,6 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           for package in $(CONDADOWNLOADS); do \
 	    conda install --offline $(CURDIR)/$${package}.tar.bz2; \
           done; \
-          patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch; \
 	  $(MODULE_LOAD_CC); \
 	  $(MODULE_LOAD_CMAKE); \
           export LDFLAGS="-lGL -lGLU"; \

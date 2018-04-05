@@ -9,5 +9,5 @@ VERSION_SRC = $(REDHAT.ROOT)/src/$(PACKAGE)/version.mk
 VERSION_INC = version.inc
 include $(VERSION_INC)
 
-RPM.EXTRAS  = AutoReq:No\nAutoProv:No\n%define __os_install_post /usr/lib/rpm/brp-compress\n%define         __prelink_undo_cmd     %{nil}\n%define __os_install_post /usr/lib/rpm/brp-python-bytecompile
+RPM.EXTRAS  = AutoReq:No\nAutoProv:No\n%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
 RPM.PREFIX  = $(PKGROOT)

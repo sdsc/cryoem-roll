@@ -27,5 +27,5 @@ CONDADOWNLOAD_PKGS = $(addsuffix .tar.bz2,$(CONDADOWNLOADS) )
 ZIP_PKGS            = $(SOURCE_PKG)
 TAR_GZ_PKGS         = $(MINICONDA_PKG)
 
-RPM.EXTRAS     = AutoReq:No\nAutoProv:No\n%define __os_install_post /usr/lib/rpm/brp-compress\n%define         __prelink_undo_cmd     %{nil}\n%define __os_install_post /usr/lib/rpm/brp-python-bytecompile
+RPM.EXTRAS     = AutoReq:No\nAutoProv:No\n%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
 RPM.PREFIX     = $(PKGROOT)
