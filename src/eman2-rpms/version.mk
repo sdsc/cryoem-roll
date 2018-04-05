@@ -3,7 +3,7 @@ PACKAGE     = eman2
 NAME        = sdsc-eman2
 VERSION     = 2.21a
 RELEASE     = 0
-PKGROOT     = /opt/matlab/$(VERSION)
+PKGROOT     = /opt/eman2
 
 VERSION_SRC = $(REDHAT.ROOT)/src/$(PACKAGE)/version.mk
 VERSION_INC = version.inc
