@@ -109,7 +109,6 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           cd  $(CURDIR)/miniconda2; \
           rm -rf pkgs/*; \
           find . ! -type d -exec ls -l {} \; >$(TEMP_DIRS)/$$$$.tmp; \
-          find . \( -name .\* -a ! -type d \) -exec ls -l {} \; >>$(TEMP_DIRS)/$$$$.tmp; \
           sum=0; \
           total=`du -b -s|awk '{print $$1}'`; \
           maxPackageSize=$$(( $$total / ( $(PACKAGES) ) )); \
