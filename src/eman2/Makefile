@@ -86,7 +86,7 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           patch $(SOURCE_DIR)/examples/fftspeed.py patch-files/fftspeed.py.patch; \
           cd $(MINICONDA_DIR); \
           bash Miniconda2-latest-Linux-x86_64.sh -b -p $(PWD)/miniconda2; \
-          export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
+          export PYTHONPATH=$(CURDIR)/miniconda2; \
           export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
           for package in $(CONDADOWNLOADS); do \
 	    conda install --offline $(CURDIR)/$${package}.tar.bz2; \
