@@ -94,7 +94,6 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
 	  $(MODULE_LOAD_CC); \
 	  $(MODULE_LOAD_CMAKE); \
           export LDFLAGS="-lGL -lGLU"; \
-          export PYTHONPATH=/state/partition1/git/cryoem-roll/src/eman2/miniconda2; \
           export PATH=$(CURDIR)/miniconda2/bin:$${PATH}; \
           export PYTHON_ROOT=$${PYTHONROOT}; \
           export PYTHON_VERSION=`python -c "from __future__ import print_function;import sys; print(sys.version[:3])"`; \
