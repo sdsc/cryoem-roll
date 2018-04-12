@@ -1,6 +1,6 @@
---- eman2-2.1/examples/fftspeed.py	2016-02-16 08:54:20.000000000 -0800
-+++ patch-files/fftspeed.py	2016-02-19 09:57:30.356380906 -0800
-@@ -57,7 +57,7 @@
+--- eman2-2.21a/examples/fftspeed.py	2018-02-20 15:37:14.000000000 -0800
++++ patch-files/fftspeed.py	2018-03-12 18:59:49.041623400 -0700
+@@ -58,7 +58,7 @@
  
  for dim in xrange(2,4):
  	times=[]
@@ -9,9 +9,9 @@
  		if dim==2 : 
  			img=EMData(size,size,1)
  			reps=int(200000/size)
-@@ -91,4 +91,4 @@
- 	print "\n"
+@@ -92,4 +92,5 @@
+ 	print("\n")
  
  	out.write(str(times2)+"\n")
--
-+print "ALL TESTS RAN"
++        print("ALL TESTS RAN")
+ 

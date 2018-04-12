@@ -53,55 +53,41 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 # @Copyright@
-
+#
+# $Log$
+#
+#
 REDHAT.ROOT = $(CURDIR)/../../
+NODE_FILE = $(REDHAT.ROOT)/nodes/cryoem-common.xml
+MANIFEST_DIR = $(REDHAT.ROOT)
+TEMP_DIRS = $(REDHAT.ROOT)/src/eman2
 
 -include $(ROCKSROOT)/etc/Rules.mk
 include Rules.mk
 include $(SDSCDEVEL)/Pull.mk
 include $(SDSCDEVEL)/Rules.mk
 
-$(NAME).spec: DESCRIPTION LICENSE
 
-DESCRIPTION:
-	$(MODULE_LOAD_CC); \
+TEMP_DIRS = $(REDHAT.ROOT)/src
+BUILDIT = 1
+
+$(VERSION_INC): $(VERSION_SRC)
+	/bin/grep 'VERSION.*=' $(VERSION_SRC) > $@
+
+build:
+
+install:: 
+	mkdir  -p -m 755 $(ROOT)/$(PKGROOT)
 	( \
-	  $(DESCRIBE_PKG); \
-	  $(DESCRIBE_CC); \
-	  $(DESCRIBE_MKL); \
-	) > $@
-
-LICENSE: $(SRC_DIRS)
-	$(CHECK_LICENSE_FILES)
-	echo "The Janelia Farm Research Campus Software" > $@
-
-MAKEFILE=Makefile_linux_amd64_gnu_mp
-ifeq ("$(COMPILERNAME)", "intel")
-  MAKEFILE=Makefile_linux_amd64_intel_mp
-else ifeq ("$(COMPILERNAME)", "pgi")
-  MAKEFILE=Makefile_linux_amd64_pgi_mp
-endif
-
-build: $(SRC_DIRS)
-	( \
-          if test "$(COMPILERNAME)" = "intel"; then \
-               patch $(SOURCE_DIR)/src/Makefile_linux_amd64_intel_mp patch-files/Makefile_linux_amd64_intel_mp.patch; \
-          fi; \
-	  $(MODULE_LOAD_CC); \
-          $(MODULE_LOAD_MKL); \
-          cd $(SOURCE_DIR)/src; \
-          $(MAKE) MKLROOT=$${MKLROOT} -f $(MAKEFILE) frealign_v9; \
-	)
-	@echo "::: Package $(NAME) build complete :::"
-	
-install::
-	mkdir -p $(ROOT)/$(PKGROOT)
-	( \
-	  cd $(SOURCE_DIR); \
-          cp -r bin  $(ROOT)/$(PKGROOT) \
-	)
-	$(INSTALL_LICENSE_FILES)
+           if test $(BUILDIT) -eq 1; then \
+             packageCount=`cat $(TEMP_DIRS)/packageCount`; \
+             for PACKAGE in `seq 1 $${packageCount}`; do \
+               make NAME=$(NAME)_$${PACKAGE} BUILDDIR=build-eman2_$${PACKAGE} BUILDIT=0 rpm; \
+             done; \
+           else \
+             cp -r $(TEMP_DIRS)/$(BUILDDIR)/* -d $(ROOT)/$(PKGROOT); \
+           fi  \
+        )
 	@echo "::: Package $(NAME) install complete :::"
 
 clean::
-	rm -rf $(SOURCE_DIR) DESCRIPTION LICENSE

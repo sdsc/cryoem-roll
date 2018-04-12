@@ -5,7 +5,7 @@ COMPILERNAME := $(firstword $(subst /, ,$(ROLLCOMPILER)))
 
 NAME           = sdsc-frealign
 VERSION        = 9.11
-RELEASE        = 1
+RELEASE        = 2
 PKGROOT        = /opt/frealign
 
 SRC_SUBDIR     = frealign

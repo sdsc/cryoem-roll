@@ -43,6 +43,7 @@
 using namespace EMAN;
 
 const string ImageAverager::NAME = "mean";
+const string SigmaAverager::NAME = "sigma";
 const string TomoAverager::NAME = "mean.tomo";
 const string MinMaxAverager::NAME = "minmax";
 const string AbsMaxMinAverager::NAME = "absmaxmin";
@@ -50,17 +51,22 @@ const string IterationAverager::NAME = "iteration";
 const string CtfCWautoAverager::NAME = "ctfw.auto";
 const string CtfCAutoAverager::NAME = "ctf.auto";
 const string CtfWtAverager::NAME = "ctf.weight";
+const string CtfWtFiltAverager::NAME = "ctf.weight.autofilt";
 const string FourierWeightAverager::NAME = "weightedfourier";
+const string LocalWeightAverager::NAME = "localweight";
 
 template <> Factory < Averager >::Factory()
 {
 	force_add<ImageAverager>();
+	force_add<SigmaAverager>();
 	force_add<MinMaxAverager>();
 	force_add<AbsMaxMinAverager>();
+	force_add<LocalWeightAverager>();
 	force_add<IterationAverager>();
 	force_add<CtfCWautoAverager>();
 	force_add<CtfCAutoAverager>();
 	force_add<CtfWtAverager>();
+	force_add<CtfWtFiltAverager>();
 	force_add<TomoAverager>();
 	force_add<FourierWeightAverager>();
 //	force_add<XYZAverager>();
@@ -75,6 +81,11 @@ void Averager::mult(const float& s)
 	else throw NullPointerException("Error, attempted to multiply the result image, which is NULL");
 }
 
+// pure virtual causing boost issues here, so this is just a dummy method
+void Averager::add_image(EMData* image)
+{
+return;
+}
 
 void Averager::add_image_list(const vector<EMData*> & image_list)
 {
@@ -84,7 +95,7 @@ void Averager::add_image_list(const vector<EMData*> & image_list)
 }
 
 TomoAverager::TomoAverager()
-	: norm_image(0)
+	: norm_image(0),nimg(0),overlap(0)
 {
 
 }
@@ -119,7 +130,9 @@ void TomoAverager::add_image(EMData * image)
 		norm_image = image->copy_head();
 		norm_image->to_zero();
 		
-		thresh_sigma = (float)params.set_default("thresh_sigma", 0.05);
+		thresh_sigma = (float)params.set_default("thresh_sigma", 0.5);
+		overlap=0.0f;
+		nimg=0;
 	}
 
 	float *result_data = result->get_data();
@@ -128,21 +141,24 @@ void TomoAverager::add_image(EMData * image)
 	
 	vector<float> threshv;
 	threshv=image->calc_radial_dist(nx/2,0,1,4);
-	for (int i=0; i<nx/2; i++) threshv[i]*=thresh_sigma;
+	for (int i=0; i<nx/2; i++) threshv[i]*=threshv[i]*thresh_sigma;  // The value here is amplitude, we square to make comparison less expensive
 	
 	size_t j=0;
 	// Add any values above threshold to the result image, and add 1 to the corresponding pixels in the norm image
+	int k=0;
 	for (int z=0; z<nz; z++) {
 		for (int y=0; y<ny; y++) {
 			for (int x=0; x<nx; x+=2, j+=2) {
 				float rf=Util::hypot3(x/2,y<ny/2?y:ny-y,z<nz/2?z:nz-z);	// origin at 0,0; periodic
 				int r=int(rf);
+				if (r>ny/2) continue;
 				float f=data[j];	// real
 				float g=data[j+1];	// imag
 				float inten=f*f+g*g;
 				
 				if (inten<threshv[r]) continue;
 				
+				k+=1;
 				result_data[j]  +=f;
 				result_data[j+1]+=g;
 				
@@ -151,13 +167,16 @@ void TomoAverager::add_image(EMData * image)
 			}
 		}
 	}
+//	printf("%d %d\n",k,nx*ny*nz);
+	overlap+=(float)k/(nx*ny*nz);
+	nimg++;
 	
 	if (image->has_attr("free_me")) delete image;
 }
 
 EMData * TomoAverager::finish()
 {
-	if (norm_image==0 || result==0) return NULL;
+	if (norm_image==0 || result==0 || nimg==0) return NULL;
 	
 	int nx = result->get_xsize();
 	int ny = result->get_ysize();
@@ -179,6 +198,7 @@ EMData * TomoAverager::finish()
 	
 	EMData *ret = result->do_ift();
 	ret->set_attr("ptcl_repr",norm_image->get_attr("maximum"));
+	ret->set_attr("mean_coverage",(float)(overlap/nimg));
 	if ((int)params.set_default("save_norm", 0)) 
 		norm_image->write_image("norm.hdf");
 	
@@ -310,6 +330,123 @@ EMData * ImageAverager::finish()
 	return result;
 }
 
+
+SigmaAverager::SigmaAverager()
+	: mean_image(0), ignore0(0), normimage(0), freenorm(0), nimg(0)
+{
+
+}
+
+void SigmaAverager::add_image(EMData * image)
+{
+	if (!image) {
+		return;
+	}
+
+	if (nimg >= 1 && !EMUtil::is_same_size(image, mean_image)) {
+		LOGERR("%sAverager can only process same-size Image",
+			   get_name().c_str());
+		return;
+	}
+
+	nimg++;
+
+	int nx = image->get_xsize();
+	int ny = image->get_ysize();
+	int nz = image->get_zsize();
+	size_t image_size = (size_t)nx * ny * nz;
+
+	if (nimg == 1) {
+		mean_image = image->copy_head();
+		mean_image->set_size(nx, ny, nz);
+
+		result = image->copy_head();
+		result->set_size(nx, ny, nz);
+
+		ignore0 = params["ignore0"];
+		normimage = params.set_default("normimage", (EMData*)0);
+		if (ignore0 && normimage==0) { normimage=new EMData(nx,ny,nz); freenorm=1; }
+		if (normimage) normimage->to_zero();
+	}
+
+	float *mean_image_data = mean_image->get_data();
+	float *result_data = result->get_data();
+	float * image_data = image->get_data();
+
+	if (!ignore0) {
+		for (size_t j = 0; j < image_size; ++j) {
+			float f = image_data[j];
+			mean_image_data[j] += f;
+			if (result_data) {
+				result_data[j] += f * f;
+			}
+		}
+	}
+	else {
+		for (size_t j = 0; j < image_size; ++j) {
+			float f = image_data[j];
+			if (f) {
+				mean_image_data[j] += f;
+				if (result_data) {
+					result_data[j] += f * f;
+				}
+				normimage->set_value_at_fast(j,normimage->get_value_at(j)+1.0);
+			}
+		}
+	}
+}
+
+EMData * SigmaAverager::finish()
+{
+	if (mean_image && nimg > 1) {
+		size_t image_size = (size_t)mean_image->get_xsize() * mean_image->get_ysize() * mean_image->get_zsize();
+		float * mean_image_data = mean_image->get_data();
+		if (!ignore0) {
+			for (size_t j = 0; j < image_size; ++j) {
+				mean_image_data[j] /= nimg;
+			}
+
+			float * result_data = result->get_data();
+			
+			for (size_t j = 0; j < image_size; ++j) {
+				float f1 = result_data[j] / nimg;
+				float f2 = mean_image_data[j];
+				result_data[j] = sqrt(f1 - f2 * f2);
+			}
+
+			result->update();
+		}
+		else {
+			for (size_t j = 0; j < image_size; ++j) {
+				if (normimage->get_value_at(j)>0) mean_image_data[j] /= normimage->get_value_at(j);
+			}
+
+			float * result_data = result->get_data();
+
+			for (size_t j = 0; j < image_size; ++j) {
+				float f1 = 0;
+				if (normimage->get_value_at(j)>0) f1=result_data[j] / normimage->get_value_at(j);
+				float f2 = mean_image_data[j];
+				result_data[j] = sqrt(f1 - f2 * f2);
+			
+				result->update();
+			}
+		}
+
+		mean_image->update();
+		mean_image->set_attr("ptcl_repr",nimg);
+
+		result->set_attr("ptcl_repr",nimg);
+
+		if (freenorm) { delete normimage; normimage=(EMData*)0; }
+
+		return result;
+	}
+	else {
+		LOGERR("%sAverager requires >=2 images", get_name().c_str());
+	}
+}
+
 FourierWeightAverager::FourierWeightAverager()
 	: normimage(0), freenorm(0), nimg(0)
 {
@@ -395,6 +532,142 @@ EMData * FourierWeightAverager::finish()
 	nimg=0;
 
 	return ret;
+}
+
+LocalWeightAverager::LocalWeightAverager()
+	: normimage(0), freenorm(0), nimg(0),fourier(0)
+{
+
+}
+
+void LocalWeightAverager::add_image(EMData * image)
+{
+	if (!image) {
+		return;
+	}
+	
+	nimg++;
+
+	int nx = image->get_xsize();
+	int ny = image->get_ysize();
+	int nz = image->get_zsize();
+
+	fourier = params.set_default("fourier", (int)0);
+	if (nimg == 1) {
+		result = image->copy_head();
+		result->set_size(nx, ny, nz);
+		result->to_zero();
+
+		
+		normimage = params.set_default("normimage", (EMData*)0);
+		if (normimage==0) { normimage=new EMData(nx,ny,nz); freenorm=1; }
+		normimage->to_zero();
+		normimage->add(0.0000001f);
+	}
+
+	images.push_back(image->copy());
+}
+
+EMData * LocalWeightAverager::finish()
+{
+	if (nimg==0) return NULL;
+	
+	int nx = images.front()->get_xsize();
+	int ny = images.front()->get_ysize();
+	int nz = images.front()->get_zsize();
+	
+	float dampnoise = params.set_default("dampnoise", (float)0.5);
+	
+	// This is the standard mode where local real-space correlation with the average is used to define a local weight (like a mask)
+	// applied to each image. If fourier>=2 then the same is done, but in "gaussian bands" in Fourier space
+	if (fourier<=1) {
+		EMData *stg1 = new EMData(nx,ny,nz);
+		
+		for (std::vector<EMData*>::iterator im = images.begin(); im!=images.end(); ++im) stg1->add(**im);
+		stg1->process_inplace("normalize");
+		
+	//	std::vector<EMData*> weights;
+		for (std::vector<EMData*>::iterator im = images.begin(); im!=images.end(); ++im) {
+			EMData *imc=(*im)->copy();
+			imc->mult(*stg1);
+			imc->process_inplace("filter.lowpass.gauss",Dict("cutoff_freq",0.02f));
+			imc->process_inplace("threshold.belowtozero",Dict("minval",0.0f));
+	//		imc->process_inplace("math.sqrt");
+	//		imc->process_inplace("math.pow",Dict("pow",0.25));
+			(*im)->mult(*imc);
+			result->add(**im);
+			normimage->add(*imc);
+			delete imc;
+			delete *im;
+		}
+		
+		if (dampnoise>0) {
+			float mean=normimage->get_attr("mean");
+			float max=normimage->get_attr("maximum");
+			normimage->process_inplace("threshold.clampminmax",Dict("minval",mean*dampnoise,"maxval",max));
+		}
+		
+		result->div(*normimage);
+		
+		result->set_attr("ptcl_repr",nimg);
+		
+		if (freenorm) { delete normimage; normimage=(EMData*)0; }
+		nimg=0;
+
+		return result;
+	}
+	else if (fourier<=ny/2) {
+		// we do pretty much the same thing as above, but one Fourier "band" at a time
+		
+		for (int r=0;  r<fourier; r++) {
+			float cen=r/((float)fourier-1.0)*0.5;
+			float sig=(0.5/fourier)/(2.0*sqrt(log(2.0)));
+			std::vector<EMData*> filt;
+
+			EMData *stg1 = new EMData(nx,ny,nz);
+			for (std::vector<EMData*>::iterator im = images.begin(); im!=images.end(); ++im) {
+				EMData *f=(*im)->process("filter.bandpass.gauss",Dict("center",(float)cen,"sigma",sig));
+				filt.push_back(f);
+				stg1->add(*f);
+				if (r==fourier-1) delete *im;		// we don't actually need the unfiltered images again
+			}
+			stg1->process_inplace("normalize");
+			stg1->process("filter.bandpass.gauss",Dict("center",(float)cen,"sigma",sig));
+//			stg1->write_image("cmp.hdf",r);
+			
+		//	std::vector<EMData*> weights;
+			int imn=1;
+			for (std::vector<EMData*>::iterator im = filt.begin(); im!=filt.end(); ++im) {
+				EMData *imc=(*im)->copy();
+				imc->mult(*stg1);
+				imc->process_inplace("filter.lowpass.gauss",Dict("cutoff_freq",0.02f));
+				imc->process_inplace("threshold.belowtozero",Dict("minval",0.0f));
+//				imc->write_image("cmp.hdf",imn*fourier+r);
+		//		imc->process_inplace("math.sqrt");
+		//		imc->process_inplace("math.pow",Dict("pow",0.25));
+				(*im)->mult(*imc);
+				result->add(**im);
+				normimage->add(*imc);
+				delete *im;
+				delete imc;
+				imn++;
+			}
+			
+			if (dampnoise>0) {
+				float mean=normimage->get_attr("mean");
+				float max=normimage->get_attr("maximum");
+				normimage->process_inplace("threshold.clampminmax",Dict("minval",mean*dampnoise,"maxval",max));
+			}
+			
+		}
+		result->div(*normimage);
+		result->set_attr("ptcl_repr",nimg);
+		
+		if (freenorm) { delete normimage; normimage=(EMData*)0; }
+		nimg=0;
+		return result;
+	}
+	
 }
 
 
@@ -507,6 +780,8 @@ MinMaxAverager::MinMaxAverager()
 	/*move max out of initializer list, since this max(0) is considered as a macro
 	 * in Visual Studio, which we defined somewhere else*/
 	max = 0;
+
+	
 }
 
 void MinMaxAverager::add_image(EMData * image)
@@ -520,7 +795,9 @@ void MinMaxAverager::add_image(EMData * image)
 			   get_name().c_str());
 		return;
 	}
+	EMData *owner = params.set_default("owner", (EMData*)0);
 
+	float thisown = image->get_attr_default("ortid",(float)nimg);
 	nimg++;
 
 	int nx = image->get_xsize();
@@ -533,12 +810,27 @@ void MinMaxAverager::add_image(EMData * image)
 		return;
 	}
 
-	for (int z=0; z<nz; z++) {
-		for (int y=0; y<ny; y++) {
-			for (int x=0; x<nx; x++) {
-				if (result->get_value_at(x,y,z)>image->get_value_at(x,y,z))
-					{ if (!max) result->set_value_at(x,y,z,image->get_value_at(x,y,z)); }
-				else { if (max) result->set_value_at(x,y,z,image->get_value_at(x,y,z)); }
+	if (max) {
+		for (int z=0; z<nz; z++) {
+			for (int y=0; y<ny; y++) {
+				for (int x=0; x<nx; x++) {
+					if (result->get_value_at(x,y,z)<=image->get_value_at(x,y,z)) {
+						result->set_value_at(x,y,z,image->get_value_at(x,y,z));
+						if (owner) owner->set_value_at(x,y,z,thisown);
+					}
+				}
+			}
+		}
+	}
+	else {
+		for (int z=0; z<nz; z++) {
+			for (int y=0; y<ny; y++) {
+				for (int x=0; x<nx; x++) {
+					if (result->get_value_at(x,y,z)>image->get_value_at(x,y,z)) {
+						result->set_value_at(x,y,z,image->get_value_at(x,y,z)); 
+						if (owner) owner->set_value_at(x,y,z,thisown);
+					}
+				}
 			}
 		}
 	}
@@ -1052,6 +1344,145 @@ EMData * CtfWtAverager::finish()
 	EMData *ret=result->do_ift();
 	delete result;
 	result=NULL;
+	return ret;
+}
+
+CtfWtFiltAverager::CtfWtFiltAverager()
+{
+	nimg[0]=0;
+	nimg[1]=0;
+	eo=-1;
+}
+
+
+void CtfWtFiltAverager::add_image(EMData * image)
+{
+	if (!image) {
+		return;
+	}
+
+
+
+	EMData *fft=image->do_fft();
+
+	if (nimg[0] >= 1 && !EMUtil::is_same_size(fft, results[0])) {
+		LOGERR("%s Averager can only process images of the same size", get_name().c_str());
+		return;
+	}
+
+	if (eo==-1) {
+		results[0] = fft->copy_head();
+		results[0]->to_zero();
+		results[1] = fft->copy_head();
+		results[1]->to_zero();
+		eo=1;
+	}
+
+	eo^=1;
+	nimg[eo]++;
+
+	
+	EMData *ctfi = results[0]-> copy();
+	if (image->has_attr("ctf")) {
+		Ctf *ctf = (Ctf *)image->get_attr("ctf");
+
+		float b=ctf->bfactor;
+		ctf->bfactor=0;		// no B-factor used in weight, not strictly threadsafe, but shouldn't be a problem
+		ctf->compute_2d_complex(ctfi,Ctf::CTF_INTEN);
+		ctf->bfactor=b;	// return to its original value
+		delete ctf;
+	}
+	else {
+		ctfi->to_one();
+	}
+		
+	float *outd = results[eo]->get_data();
+	float *ind = fft->get_data();
+	float *ctfd = ctfi->get_data();
+
+	size_t sz=ctfi->get_xsize()*ctfi->get_ysize();
+	for (size_t i = 0; i < sz; i+=2) {
+		
+		// CTF weight
+		outd[i]+=ind[i]*ctfd[i];
+		outd[i+1]+=ind[i+1]*ctfd[i];
+	}
+
+	if (nimg[eo]==1) {
+		ctfsum[eo]=ctfi->copy_head();
+		ctfsum[eo]->to_zero();
+		ctfsum[eo]->add(0.1);		// we start with a value of 0.1 rather than zero to empirically help with situations where the data is incomplete
+	}
+	ctfsum[eo]->add(*ctfi);
+
+	delete fft;
+	delete ctfi;
+}
+
+EMData * CtfWtFiltAverager::finish()
+{
+	if (nimg[0]==0 && nimg[1]==0) return NULL;	// no images
+	// Only a single image, so we just return it. No way to filter
+	if (nimg[1]==0) {
+		EMData *ret=results[0]->do_ift();
+		delete results[0];
+		delete results[1];
+		delete ctfsum[0];
+		return ret;
+	}
+
+	int nx=results[0]->get_xsize();
+	int ny=results[0]->get_ysize();
+
+	for (int k=0; k<2; k++) {
+		float *outd=results[k]->get_data();
+		float *ctfsd=ctfsum[k]->get_data();
+		for (int j=0; j<ny; j++) {
+			for (int i=0; i<nx; i+=2) {
+				size_t ii=i+j*nx;
+				outd[ii]/=ctfsd[ii];
+				outd[ii+1]/=ctfsd[ii];
+			}
+		}
+		results[k]->update();
+	//	result->set_attr("ctf_total",ctfsum->calc_radial_dist(ctfsum->get_ysize()/2,0,1,false));
+		results[0]->set_attr("ctf_wiener_filtered",1);
+	}
+	
+	// compute the Wiener filter from the FSC
+	std::vector<float> fsc=results[0]->calc_fourier_shell_correlation(results[1]);
+	int third=fsc.size()/3;
+	for (int i=third; i<third*2; i++) {
+		if (fsc[i]>=.9999) fsc[i]=.9999;
+		if (fsc[i]<.001) fsc[i]=.001;
+		float snr=fsc[i]/(1.0-fsc[i]);
+		fsc[i]=snr*snr/(snr*snr+1.0);
+	}
+	
+	
+	results[0]->add(*results[1]);
+	
+	float c;
+	for (int j=-ny/2; j<ny/2; j++) {
+		for (int i=0; i<nx/2; i++) {
+			int r=(int)Util::hypot_fast(i,j);
+			if (r>=third) c=0.0;
+			else c=fsc[third+r];
+			results[0]->set_complex_at(i,j,results[0]->get_complex_at(i,j)*c);
+		}
+	}
+	
+	EMData *ret=results[0]->do_ift();
+	ret->set_attr("ptcl_repr",nimg[0]+nimg[1]);
+	
+/*	snrsum->write_image("snr.hdf",-1);
+	result->write_image("avg.hdf",-1);*/
+	
+	delete ctfsum[0];
+	delete ctfsum[1];
+	delete results[0];
+	delete results[1];
+	results[0]=results[1]=NULL;
 	return ret;
 }
 

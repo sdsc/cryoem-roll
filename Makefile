@@ -57,6 +57,8 @@
 # $Log$
 #
 
+PACKAGES=4
+
 ifndef ROLLCOMPILER
   ROLLCOMPILER = gnu
 endif
@@ -65,16 +67,13 @@ ifndef ROLLMPI
   ROLLMPI = rocks-openmpi
 endif
 
-ifndef ROLLPY
-  ROLLPY = python
-endif
-
 -include $(ROLLSROOT)/etc/Rolls.mk
 include Rolls.mk
 
 default:
-	$(MAKE) ROLLCOMPILER="$(ROLLCOMPILER)" ROLLMPI="$(ROLLMPI)" ROLLPY="$(ROLLPY)" roll
+	cp nodes/cryoem-common.xml.in nodes/cryoem-common.xml
+	$(MAKE) ROLLCOMPILER="$(ROLLCOMPILER)" ROLLMPI="$(ROLLMPI)" PACKAGES=$(PACKAGES) roll
 
 distclean:: clean
 	-rm -f _arch build.log
-	-rm -rf RPMS SRPMS cache
+	-rm -rf RPMS SRPMS cache src/build-* src/*.tmp
