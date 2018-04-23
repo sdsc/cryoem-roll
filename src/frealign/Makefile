@@ -83,6 +83,7 @@ else ifeq ("$(COMPILERNAME)", "pgi")
 endif
 
 build: $(SRC_DIRS)
+	perl -pi -e 's/-openmp/-qopenmp/g' $(SOURCE_DIR)/*/*
 	( \
           if test "$(COMPILERNAME)" = "intel"; then \
                patch $(SOURCE_DIR)/src/Makefile_linux_amd64_intel_mp patch-files/Makefile_linux_amd64_intel_mp.patch; \
