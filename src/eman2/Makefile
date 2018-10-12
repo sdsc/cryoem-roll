@@ -101,7 +101,7 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           mkdir build; \
           cd build; \
           cmake -DENABLE_OPTIMIZE_MACHINE=ON ..; \
-          make; \
+          make -j 16; \
           make install; \
           packageCount=1; \
           mkdir  -p $(TEMP_DIRS)/build-eman2_$${packageCount}; \
