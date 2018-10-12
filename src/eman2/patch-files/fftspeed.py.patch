@@ -1,15 +1,15 @@
---- eman2-2.21a/examples/fftspeed.py	2018-02-20 15:37:14.000000000 -0800
-+++ patch-files/fftspeed.py	2018-03-12 18:59:49.041623400 -0700
-@@ -58,7 +58,7 @@
+--- eman2-2.22/examples/fftspeed.py	2018-10-11 12:07:54.000000000 -0700
++++ patch-files/fftspeed.py	2018-10-11 17:55:46.179226975 -0700
+@@ -61,7 +61,7 @@
  
- for dim in xrange(2,4):
+ for dim in range(2,4):
  	times=[]
--	for size in xrange(20,514,2):
-+	for size in xrange(20,128,2):
+-	for size in range(20,514,2):
++ 	for size in xrange(20,128,2):
  		if dim==2 : 
  			img=EMData(size,size,1)
- 			reps=int(200000/size)
-@@ -92,4 +92,5 @@
+ 			reps=int(old_div(200000,size))
+@@ -95,4 +95,5 @@
  	print("\n")
  
  	out.write(str(times2)+"\n")
