@@ -5,7 +5,7 @@ override ROLLCOMPILER = gnu
 COMPILERNAME := $(firstword $(subst /, ,$(ROLLCOMPILER)))
 
 NAME                = sdsc-eman2
-VERSION             = 2.21a
+VERSION             = 2.22
 RELEASE             = 0
 PKGROOT             = /opt/eman2
 
