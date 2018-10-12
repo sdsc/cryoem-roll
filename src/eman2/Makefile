@@ -158,7 +158,6 @@ $(CONDADOWNLOAD_PKGS):
 install::
 	mkdir -p -m 755 $(ROOT)/$(PKGROOT)
 	( \
-          perl -pi -e "s!PKGROOT!$(PKGROOT)!" $(NODE_FILE); \
           packageCount=`cat $(TEMP_DIRS)/packageCount`; \
           for PACKAGE in `seq 1 $${packageCount}`; do \
                perl -pi -e "print and s/$(NAME)_PACKAGE/$(NAME)_$${PACKAGE}/ if m/$(NAME)_PACKAGE/" $(NODE_FILE); \
