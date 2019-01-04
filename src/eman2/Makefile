@@ -103,6 +103,7 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           cmake -DENABLE_OPTIMIZE_MACHINE=ON ..; \
           make -j 16; \
           make install; \
+          sed -i '1s/.*/#!$(PKGROOT_ESCAPE)\/bin\/conda/' $(PWD)/miniconda2/bin/python; \
           packageCount=1; \
           mkdir  -p $(TEMP_DIRS)/build-eman2_$${packageCount}; \
           cd  $(CURDIR)/miniconda2; \
