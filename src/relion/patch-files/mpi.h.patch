@@ -1,0 +1,11 @@
+--- relion-1.4/src/mpi.h	2015-06-05 02:29:15.000000000 -0700
++++ patch-files/mpi.h	2018-04-05 16:49:41.361081292 -0700
+@@ -82,7 +82,7 @@
+     int relion_MPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm);
+ 
+     /* Better error handling of MPI error messages */
+-    void report_MPI_ERROR(int errno);
++    void report_MPI_ERROR(int mpi_errno);
+ 
+ };
+ 
