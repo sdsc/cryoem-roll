@@ -69,6 +69,7 @@ DESCRIPTION:
 	$(MODULE_LOAD_CC); \
 	( \
 	  $(DESCRIBE_PKG); \
+          $(DESCRIBE_CMAKE); \
 	  $(DESCRIBE_CC); \
           $(DESCRIBE_MPI); \
           $(DESCRIBE_FFTW); \
@@ -79,27 +80,18 @@ LICENSE: $(SRC_DIRS)
 	echo GPL > $@
 
 build: $(SRC_DIRS)
-	mkdir -p $(CACHE_DIR)/fltk
-	patch $(SOURCE_DIR)/src/Healpix_2.15a/cxxutils.cc  patch-files/cxxutils.cc.patch
-	patch $(SOURCE_DIR)/src/mpi.h  patch-files/mpi.h.patch
 	( \
+          $(MODULE_LOAD_CMAKE); \
 	  $(MODULE_LOAD_CC); \
 	  $(MODULE_LOAD_MPI); \
 	  $(MODULE_LOAD_FFTW); \
-          cd $(SOURCE_DIR)/external; \
-          tar -zxf $(VFLTK).tar.gz; \
-          cd $(VFLTK); \
-          ./configure --enable-shared prefix=`pwd`/../..; \
-          $(MAKE) -j 8; \
-          $(MAKE) install; \
-          cd ../..; \
-          export CPPFLAGS="-I$${FFTWHOME}/include `bin/fltk-config --cxxflags`"; \
-          export LDFLAGS="-L$${FFTWHOME}/lib `bin/fltk-config --ldflags`"; \
-	  if test "$(COMPILERNAME)" = "gnu"; then \
-	    export CXXFLAGS='-std=c++98'; \
-	  fi; \
-         ./configure --enable-mpi prefix=$(PKGROOT); \
-          $(MAKE) -j 8; \
+          cd $(SOURCE_DIR); \
+          mkdir build; \
+          cd build; \
+          export CC=$(CC); \
+          export CXX=$(CXX); \
+          cmake -DCMAKE_INSTALL_PREFIX=$(PKGROOT) -DMPI_C_COMPILER=mpicc MPI_CXX_COMPILER=mpicxx ..; \
+          $(MAKE) -j 16 \
 	)
 	@echo "::: Package $(NAME) build complete :::"
 	
@@ -110,16 +102,8 @@ install::
 	  $(MODULE_LOAD_CC); \
 	  $(MODULE_LOAD_MPI); \
 	  $(MODULE_LOAD_FFTW); \
-	  cd $(SOURCE_DIR); \
+	  cd $(SOURCE_DIR)/build; \
 	  $(MAKE) install; \
-          cp -r bin/*  $(PKGROOT)/bin; \
-          cp -r include/*  $(PKGROOT)/include; \
-          cp -r lib/*  $(PKGROOT)/lib; \
-          cp -r share/*  $(PKGROOT)/share; \
-          cp maingui $(PKGROOT)/bin/relion; \
-          mpic++ -O2 -o .libs/lt-maingui src/apps/maingui.o  -L$${FFTWHOME}/lib -Lexternal/fltk-1.3.0/../../lib -L/usr/lib64 ./.libs/librelion-1.4.so -lfltk -lXext -lXft -lfontconfig -lXinerama -lpthread -ldl -lX11 -lstdc++ $${FFTWHOME}/lib/libfftw3_threads.so $${FFTWHOME}/lib/libfftw3.so -lm -pthread; \
-          mkdir -p  $(PKGROOT)/bin/.libs; \
-          cp .libs/lt-maingui $(PKGROOT)/bin/.libs \
 	)
 	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)
