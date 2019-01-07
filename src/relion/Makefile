@@ -65,6 +65,11 @@ CACHE_DIR=$(REDHAT.ROOT)/cache
 
 $(NAME).spec: DESCRIPTION LICENSE
 
+CUDABUILD = no
+ifneq ("$(ROLLOPTS)", "$(subst cuda,,$(ROLLOPTS))")
+  CUDABUILD = yes
+endif
+
 DESCRIPTION:
 	$(MODULE_LOAD_CC); \
 	( \
@@ -72,6 +77,9 @@ DESCRIPTION:
 	  $(DESCRIBE_CC); \
           $(DESCRIBE_MPI); \
           $(DESCRIBE_FFTW); \
+          if test "$(CUDABUILD)" = "yes"; then \
+             $(DESCRIBE_CUDA); \
+          fi \
 	) > $@
 
 LICENSE: $(SRC_DIRS)
@@ -79,6 +87,11 @@ LICENSE: $(SRC_DIRS)
 	echo GPL > $@
 
 build: $(SRC_DIRS)
+	@echo "::: Package $(NAME) build complete :::"
+	
+install::
+	mkdir -p $(ROOT)/$(PKGROOT)/share
+	$(PKGROOT_BIND_MOUNT)
 	( \
           $(MODULE_LOAD_CMAKE); \
 	  $(MODULE_LOAD_CC); \
@@ -89,20 +102,21 @@ build: $(SRC_DIRS)
           cd build; \
           export CC=$(CC); \
           export CXX=$(CXX); \
-          cmake -DCMAKE_INSTALL_PREFIX=$(PKGROOT) -DMPI_C_COMPILER=mpicc MPI_CXX_COMPILER=mpicxx ..; \
-          $(MAKE) -j 16 \
-	)
-	@echo "::: Package $(NAME) build complete :::"
-	
-install::
-	mkdir -p $(ROOT)/$(PKGROOT)/share
-	$(PKGROOT_BIND_MOUNT)
-	( \
-	  $(MODULE_LOAD_CC); \
-	  $(MODULE_LOAD_MPI); \
-	  $(MODULE_LOAD_FFTW); \
-	  cd $(SOURCE_DIR)/build; \
-	  $(MAKE) install; \
+          cmake -DCMAKE_INSTALL_PREFIX=$(PKGROOT)/cpu -DMPI_C_COMPILER=mpicc MPI_CXX_COMPILER=mpicxx -DCUDA=OFF ..; \
+          $(MAKE) -j 16; \
+          $(MAKE) install; \
+          mv $(PKGROOT)/cpu/bin $(PKGROOT)/bin; \
+          if test "$(CUDABUILD)" = "yes"; then \
+             rm -rf *; \
+             $(MODULE_LOAD_CUDA); \
+             cmake -DCMAKE_INSTALL_PREFIX=$(PKGROOT)/gpu -DMPI_C_COMPILER=mpicc MPI_CXX_COMPILER=mpicxx -DCUDA=ON ..; \
+             $(MAKE) -j 16; \
+             $(MAKE) install; \
+             for EXE in $(RELIONEXES); do \
+                mv $(PKGROOT)/gpu/bin/$${EXE} $(PKGROOT)/bin/$${EXE}.cuda; \
+             done; \
+             rm -rf $(PKGROOT)/gpu/bin; \
+          fi \
 	)
 	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)

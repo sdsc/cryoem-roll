@@ -6,5 +6,5 @@ module-whatis "Compiler: ROLLCOMPILER"
 module-whatis "mpi: ROLLMPI"
 setenv RELIONHOME /opt/relion
 prepend-path PATH /opt/relion/bin
-prepend-path LD_LIBRARY_PATH /opt/relion/lib
+prepend-path LD_LIBRARY_PATH /opt/relion/cpu/lib:/opt/relion/gpu/lib
 module load ROLLCOMPILER ROLLMPI fftw
