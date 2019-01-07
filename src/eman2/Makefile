@@ -101,8 +101,9 @@ build: $(SRC_DIRS) $(CONDADOWNLOAD_PKGS)
           mkdir build; \
           cd build; \
           cmake -DENABLE_OPTIMIZE_MACHINE=ON ..; \
-          make; \
+          make -j 16; \
           make install; \
+          sed -i '1s/.*/#!$(PKGROOT_ESCAPE)\/bin\/python/' $(PWD)/miniconda2/bin/conda; \
           packageCount=1; \
           mkdir  -p $(TEMP_DIRS)/build-eman2_$${packageCount}; \
           cd  $(CURDIR)/miniconda2; \
@@ -158,7 +159,6 @@ $(CONDADOWNLOAD_PKGS):
 install::
 	mkdir -p -m 755 $(ROOT)/$(PKGROOT)
 	( \
-          perl -pi -e "s!PKGROOT!$(PKGROOT)!" $(NODE_FILE); \
           packageCount=`cat $(TEMP_DIRS)/packageCount`; \
           for PACKAGE in `seq 1 $${packageCount}`; do \
                perl -pi -e "print and s/$(NAME)_PACKAGE/$(NAME)_$${PACKAGE}/ if m/$(NAME)_PACKAGE/" $(NODE_FILE); \

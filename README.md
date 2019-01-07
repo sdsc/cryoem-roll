@@ -8,7 +8,7 @@ For more information about the various packages included in the cryoem roll plea
 
 - <a href="http://www2.mrc-lmb.cam.ac.uk/relion/index.php/Main_Page" target="_blank">relion</a> is  is a stand-alone computer program that employs an empirical Bayesian approach to refinement of (multiple) 3D reconstructions or 2D class averages in electron cryo-microscopy (cryo-EM)
 - <a href="http://grigoriefflab.janelia.org/frealign" target="_blank">frealign</a> is a program for high-resolution refinement of 3D reconstructions from cryo-EM images of single particles
-- <a href="http://ncmi.bcm.tmc.edu/ncmi/software/software_details?selected_software=counter_222" target="_blank">eman2</a>  is a broadly based greyscale scientific image processing suite with a primary focus on processing data from transmission electron microscopes
+- <a href="http://blake.bcm.edu/emanwiki/EMAN2" target="_blank">eman2</a>  is a broadly based greyscale scientific image processing suite with a primary focus on processing data from transmission electron microscopes
 
 
 ## Requirements
