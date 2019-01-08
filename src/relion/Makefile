@@ -61,8 +61,6 @@ include Rules.mk
 include $(SDSCDEVEL)/Pull.mk
 include $(SDSCDEVEL)/Rules.mk
 
-CACHE_DIR=$(REDHAT.ROOT)/cache
-
 $(NAME).spec: DESCRIPTION LICENSE
 
 CUDABUILD = no
@@ -75,8 +73,8 @@ DESCRIPTION:
 	( \
 	  $(DESCRIBE_PKG); \
 	  $(DESCRIBE_CC); \
-          $(DESCRIBE_MPI); \
-          $(DESCRIBE_FFTW); \
+	  $(DESCRIBE_MPI); \
+	  $(DESCRIBE_FFTW); \
           if test "$(CUDABUILD)" = "yes"; then \
              $(DESCRIBE_CUDA); \
           fi \
@@ -94,9 +92,9 @@ install::
 	$(PKGROOT_BIND_MOUNT)
 	( \
           $(MODULE_LOAD_CMAKE); \
-	  $(MODULE_LOAD_CC); \
-	  $(MODULE_LOAD_MPI); \
-	  $(MODULE_LOAD_FFTW); \
+          $(MODULE_LOAD_CC); \
+          $(MODULE_LOAD_MPI); \
+          $(MODULE_LOAD_FFTW); \
           cd $(SOURCE_DIR); \
           mkdir build; \
           cd build; \
@@ -117,7 +115,7 @@ install::
              done; \
              rm -rf $(PKGROOT)/gpu/bin; \
           fi \
-	)
+        )
 	$(PKGROOT_BIND_UMOUNT)
 	$(INSTALL_LICENSE_FILES)
 	@echo "::: Package $(NAME) install complete :::"
