@@ -36,6 +36,13 @@ SKIP: {
      $output = `module load relion; $package  2>&1`;
      $output = lc($output);
      like($output, qr/options/, "$package works");
+     SKIP: {
+       skip 'CUDA_VISIBLE_DEVICES undef', 1
+         if ! defined($ENV{'CUDA_VISIBLE_DEVICES'});
+       $output = `module load relion; $package.cuda  2>&1`;
+       $output = lc($output);
+       like($output, qr/options/, "$package.cuda works");
+     }
   }
 }
 
